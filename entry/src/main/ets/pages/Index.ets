@@ -1,0 +1,981 @@
+type CalculatorKey = 'length' | 'volume' | 'time' | 'stopwatch' | 'weight' | 'area' | 'tax' | 'mortgage';
+type RepaymentType = 'interest' | 'principal';
+
+interface CalculatorCategory {
+  key: CalculatorKey;
+  title: string;
+  icon: string;
+  desc: string;
+}
+
+interface UnitDefinition {
+  name: string;
+  symbol: string;
+  factor: number;
+}
+
+interface ConverterConfig {
+  title: string;
+  desc: string;
+  valuePlaceholder: string;
+  units: UnitDefinition[];
+  precision: number;
+  estimateNote: string;
+}
+
+interface MetricItem {
+  label: string;
+  value: string;
+}
+
+interface UnitSelectOption {
+  value: string;
+}
+
+interface TaxBracket {
+  threshold: number;
+  rate: number;
+  deduction: number;
+}
+
+const CATEGORIES: CalculatorCategory[] = [
+  { key: 'length', title: '长度', icon: 'm', desc: '米、厘米、英尺、英里' },
+  { key: 'volume', title: '体积', icon: 'L', desc: '升、毫升、立方米' },
+  { key: 'time', title: '时间', icon: 'h', desc: '秒、分钟、小时、天' },
+  { key: 'stopwatch', title: '秒表', icon: '⏱', desc: '计时、暂停、计次' },
+  { key: 'weight', title: '重量', icon: 'kg', desc: '克、千克、磅、吨' },
+  { key: 'area', title: '面积', icon: '㎡', desc: '平方米、公顷、亩' },
+  { key: 'tax', title: '个税', icon: '¥', desc: '综合所得估算' },
+  { key: 'mortgage', title: '房贷', icon: '%', desc: '等额本息、等额本金' }
+];
+
+const LENGTH_UNITS: UnitDefinition[] = [
+  { name: '毫米', symbol: 'mm', factor: 0.001 },
+  { name: '厘米', symbol: 'cm', factor: 0.01 },
+  { name: '米', symbol: 'm', factor: 1 },
+  { name: '千米', symbol: 'km', factor: 1000 },
+  { name: '英寸', symbol: 'in', factor: 0.0254 },
+  { name: '英尺', symbol: 'ft', factor: 0.3048 },
+  { name: '码', symbol: 'yd', factor: 0.9144 },
+  { name: '英里', symbol: 'mi', factor: 1609.344 }
+];
+
+const VOLUME_UNITS: UnitDefinition[] = [
+  { name: '毫升', symbol: 'ml', factor: 0.001 },
+  { name: '升', symbol: 'L', factor: 1 },
+  { name: '立方厘米', symbol: 'cm³', factor: 0.001 },
+  { name: '立方米', symbol: 'm³', factor: 1000 },
+  { name: '加仑', symbol: 'gal', factor: 3.785411784 }
+];
+
+const TIME_UNITS: UnitDefinition[] = [
+  { name: '秒', symbol: 's', factor: 1 },
+  { name: '分钟', symbol: 'min', factor: 60 },
+  { name: '小时', symbol: 'h', factor: 3600 },
+  { name: '天', symbol: 'd', factor: 86400 },
+  { name: '周', symbol: 'w', factor: 604800 },
+  { name: '月', symbol: 'mo', factor: 2629800 },
+  { name: '年', symbol: 'y', factor: 31557600 }
+];
+
+const WEIGHT_UNITS: UnitDefinition[] = [
+  { name: '毫克', symbol: 'mg', factor: 0.000001 },
+  { name: '克', symbol: 'g', factor: 0.001 },
+  { name: '千克', symbol: 'kg', factor: 1 },
+  { name: '吨', symbol: 't', factor: 1000 },
+  { name: '盎司', symbol: 'oz', factor: 0.028349523125 },
+  { name: '磅', symbol: 'lb', factor: 0.45359237 }
+];
+
+const AREA_UNITS: UnitDefinition[] = [
+  { name: '平方毫米', symbol: 'mm²', factor: 0.000001 },
+  { name: '平方厘米', symbol: 'cm²', factor: 0.0001 },
+  { name: '平方米', symbol: 'm²', factor: 1 },
+  { name: '亩', symbol: '亩', factor: 666.6666667 },
+  { name: '公顷', symbol: 'ha', factor: 10000 },
+  { name: '平方千米', symbol: 'km²', factor: 1000000 },
+  { name: '平方英尺', symbol: 'ft²', factor: 0.09290304 }
+];
+
+const TAX_BRACKETS: TaxBracket[] = [
+  { threshold: 960000, rate: 0.45, deduction: 181920 },
+  { threshold: 660000, rate: 0.35, deduction: 85920 },
+  { threshold: 420000, rate: 0.30, deduction: 52920 },
+  { threshold: 300000, rate: 0.25, deduction: 31920 },
+  { threshold: 144000, rate: 0.20, deduction: 16920 },
+  { threshold: 36000, rate: 0.10, deduction: 2520 },
+  { threshold: 0, rate: 0.03, deduction: 0 }
+];
+
+@Entry
+@Component
+struct Index {
+  @State activeKey: CalculatorKey = 'length';
+  @State categoryItems: CalculatorCategory[] = CATEGORIES.slice();
+  @State showCategoryEditor: boolean = false;
+  @State converterValue: string = '128';
+  @State fromIndex: number = 2;
+  @State toIndex: number = 1;
+  @State stopwatchMs: number = 0;
+  @State stopwatchRunning: boolean = false;
+  @State lapItems: string[] = [];
+  @State monthlyIncome: string = '20000';
+  @State monthlyInsurance: string = '3200';
+  @State monthlyDeduction: string = '2000';
+  @State prepaidTax: string = '5800';
+  @State loanAmount: string = '100';
+  @State loanYears: string = '30';
+  @State annualRate: string = '4.2';
+  @State repaymentType: RepaymentType = 'interest';
+  private timerId: number = -1;
+
+  aboutToDisappear(): void {
+    this.stopTimer();
+  }
+
+  private getConverterConfig(): ConverterConfig {
+    if (this.activeKey === 'volume') {
+      return {
+        title: '体积换算',
+        desc: '升、毫升、立方厘米、立方米和加仑快速换算。',
+        valuePlaceholder: '输入体积',
+        units: VOLUME_UNITS,
+        precision: 4,
+        estimateNote: ''
+      };
+    }
+    if (this.activeKey === 'time') {
+      return {
+        title: '时间换算',
+        desc: '秒、分钟、小时、天、周、月、年之间换算。',
+        valuePlaceholder: '输入时间',
+        units: TIME_UNITS,
+        precision: 4,
+        estimateNote: '月和年按固定平均值估算。'
+      };
+    }
+    if (this.activeKey === 'weight') {
+      return {
+        title: '重量换算',
+        desc: '毫克、克、千克、吨、盎司和磅之间换算。',
+        valuePlaceholder: '输入重量',
+        units: WEIGHT_UNITS,
+        precision: 4,
+        estimateNote: ''
+      };
+    }
+    if (this.activeKey === 'area') {
+      return {
+        title: '面积换算',
+        desc: '平方米、亩、公顷、平方千米等面积单位换算。',
+        valuePlaceholder: '输入面积',
+        units: AREA_UNITS,
+        precision: 4,
+        estimateNote: ''
+      };
+    }
+    return {
+      title: '长度换算',
+      desc: '毫米、厘米、米、千米和英制长度单位快速换算。',
+      valuePlaceholder: '输入长度',
+      units: LENGTH_UNITS,
+      precision: 4,
+      estimateNote: ''
+    };
+  }
+
+  private parseNumber(value: string): number {
+    const parsed: number = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+    return 0;
+  }
+
+  private clampUnitIndex(index: number, units: UnitDefinition[]): number {
+    if (index < 0 || index >= units.length) {
+      return 0;
+    }
+    return index;
+  }
+
+  private formatNumber(value: number, precision: number = 2): string {
+    if (!Number.isFinite(value)) {
+      return '0';
+    }
+    const fixed: string = value.toFixed(precision);
+    return fixed.replace(/\.?0+$/, '');
+  }
+
+  private formatMoney(value: number): string {
+    if (!Number.isFinite(value)) {
+      return '¥ 0.00';
+    }
+    return `¥ ${value.toFixed(2)}`;
+  }
+
+  private getConversionValue(): number {
+    const config: ConverterConfig = this.getConverterConfig();
+    const fromUnit: UnitDefinition = config.units[this.clampUnitIndex(this.fromIndex, config.units)];
+    const toUnit: UnitDefinition = config.units[this.clampUnitIndex(this.toIndex, config.units)];
+    const input: number = this.parseNumber(this.converterValue);
+    return input * fromUnit.factor / toUnit.factor;
+  }
+
+  private getConversionText(): string {
+    const config: ConverterConfig = this.getConverterConfig();
+    const toUnit: UnitDefinition = config.units[this.clampUnitIndex(this.toIndex, config.units)];
+    return `${this.formatNumber(this.getConversionValue(), config.precision)} ${toUnit.symbol}`;
+  }
+
+  private getUnitSelectOptions(units: UnitDefinition[]): UnitSelectOption[] {
+    const options: UnitSelectOption[] = [];
+    for (let index: number = 0; index < units.length; index++) {
+      options.push({ value: units[index].name });
+    }
+    return options;
+  }
+
+  private resetConverterIndexes(): void {
+    this.fromIndex = 0;
+    this.toIndex = 1;
+    if (this.activeKey === 'length') {
+      this.fromIndex = 2;
+      this.toIndex = 1;
+    }
+    if (this.activeKey === 'volume') {
+      this.fromIndex = 1;
+      this.toIndex = 0;
+    }
+    if (this.activeKey === 'time') {
+      this.fromIndex = 2;
+      this.toIndex = 3;
+    }
+    if (this.activeKey === 'weight') {
+      this.fromIndex = 2;
+      this.toIndex = 5;
+    }
+    if (this.activeKey === 'area') {
+      this.fromIndex = 2;
+      this.toIndex = 3;
+    }
+  }
+
+  private selectCategory(key: CalculatorKey): void {
+    this.activeKey = key;
+    if (this.isConverterCategory(key)) {
+      this.resetConverterIndexes();
+    }
+  }
+
+  private getActiveCategory(): CalculatorCategory {
+    for (let index: number = 0; index < this.categoryItems.length; index++) {
+      const item: CalculatorCategory = this.categoryItems[index];
+      if (item.key === this.activeKey) {
+        return item;
+      }
+    }
+    return CATEGORIES[0];
+  }
+
+  private getCategoryIndex(key: CalculatorKey): number {
+    for (let index: number = 0; index < this.categoryItems.length; index++) {
+      if (this.categoryItems[index].key === key) {
+        return index;
+      }
+    }
+    return -1;
+  }
+
+  private clampCategoryIndex(index: number): number {
+    if (index < 0) {
+      return 0;
+    }
+    const maxIndex: number = this.categoryItems.length - 1;
+    if (index > maxIndex) {
+      return maxIndex;
+    }
+    return index;
+  }
+
+  private moveCategory(fromIndex: number, toIndex: number): void {
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
+      return;
+    }
+    const nextItems: CalculatorCategory[] = this.categoryItems.slice();
+    const movingItems: CalculatorCategory[] = nextItems.splice(fromIndex, 1);
+    if (movingItems.length === 0) {
+      return;
+    }
+    nextItems.splice(toIndex, 0, movingItems[0]);
+    this.categoryItems = nextItems;
+  }
+
+  private resetCategoryOrder(): void {
+    this.categoryItems = CATEGORIES.slice();
+  }
+
+  private isConverterCategory(key: CalculatorKey): boolean {
+    return key === 'length' || key === 'volume' || key === 'time' || key === 'weight' || key === 'area';
+  }
+
+  private startTimer(): void {
+    if (this.stopwatchRunning) {
+      return;
+    }
+    this.stopwatchRunning = true;
+    this.timerId = setInterval((): void => {
+      this.stopwatchMs += 10;
+    }, 10);
+  }
+
+  private stopTimer(): void {
+    if (this.timerId >= 0) {
+      clearInterval(this.timerId);
+      this.timerId = -1;
+    }
+    this.stopwatchRunning = false;
+  }
+
+  private resetTimer(): void {
+    this.stopTimer();
+    this.stopwatchMs = 0;
+    this.lapItems = [];
+  }
+
+  private addLap(): void {
+    if (this.stopwatchMs <= 0) {
+      return;
+    }
+    const nextItems: string[] = this.lapItems.slice();
+    nextItems.unshift(this.formatDuration(this.stopwatchMs));
+    this.lapItems = nextItems;
+  }
+
+  private formatDuration(ms: number): string {
+    const totalCentiseconds: number = Math.floor(ms / 10);
+    const centiseconds: number = totalCentiseconds % 100;
+    const totalSeconds: number = Math.floor(totalCentiseconds / 100);
+    const seconds: number = totalSeconds % 60;
+    const totalMinutes: number = Math.floor(totalSeconds / 60);
+    const minutes: number = totalMinutes % 60;
+    const hours: number = Math.floor(totalMinutes / 60);
+    return `${this.pad2(hours)}:${this.pad2(minutes)}:${this.pad2(seconds)}.${this.pad2(centiseconds)}`;
+  }
+
+  private pad2(value: number): string {
+    if (value < 10) {
+      return `0${value}`;
+    }
+    return `${value}`;
+  }
+
+  private getTaxableIncome(): number {
+    const annualIncome: number = this.parseNumber(this.monthlyIncome) * 12;
+    const annualInsurance: number = this.parseNumber(this.monthlyInsurance) * 12;
+    const annualDeduction: number = this.parseNumber(this.monthlyDeduction) * 12;
+    const taxableIncome: number = annualIncome - 60000 - annualInsurance - annualDeduction;
+    return Math.max(0, taxableIncome);
+  }
+
+  private getTaxDue(): number {
+    const taxableIncome: number = this.getTaxableIncome();
+    for (let index: number = 0; index < TAX_BRACKETS.length; index++) {
+      const bracket: TaxBracket = TAX_BRACKETS[index];
+      if (taxableIncome > bracket.threshold) {
+        return Math.max(0, taxableIncome * bracket.rate - bracket.deduction);
+      }
+    }
+    return 0;
+  }
+
+  private getTaxMetrics(): MetricItem[] {
+    const annualIncome: number = this.parseNumber(this.monthlyIncome) * 12;
+    const taxDue: number = this.getTaxDue();
+    const prepaid: number = this.parseNumber(this.prepaidTax);
+    const balance: number = taxDue - prepaid;
+    return [
+      { label: '应纳税所得额', value: this.formatMoney(this.getTaxableIncome()) },
+      { label: '估算税后收入', value: this.formatMoney(annualIncome - taxDue) },
+      { label: balance >= 0 ? '预计补税' : '预计退税', value: this.formatMoney(Math.abs(balance)) }
+    ];
+  }
+
+  private getMonthlyRate(): number {
+    return this.parseNumber(this.annualRate) / 100 / 12;
+  }
+
+  private getLoanPrincipal(): number {
+    return this.parseNumber(this.loanAmount) * 10000;
+  }
+
+  private getLoanMonths(): number {
+    return Math.max(1, Math.round(this.parseNumber(this.loanYears) * 12));
+  }
+
+  private getEqualInterestPayment(): number {
+    const principal: number = this.getLoanPrincipal();
+    const months: number = this.getLoanMonths();
+    const monthlyRate: number = this.getMonthlyRate();
+    if (monthlyRate <= 0) {
+      return principal / months;
+    }
+    const power: number = Math.pow(1 + monthlyRate, months);
+    return principal * monthlyRate * power / (power - 1);
+  }
+
+  private getEqualPrincipalFirstPayment(): number {
+    const principal: number = this.getLoanPrincipal();
+    const months: number = this.getLoanMonths();
+    const monthlyRate: number = this.getMonthlyRate();
+    return principal / months + principal * monthlyRate;
+  }
+
+  private getEqualPrincipalLastPayment(): number {
+    const principal: number = this.getLoanPrincipal();
+    const months: number = this.getLoanMonths();
+    const monthlyRate: number = this.getMonthlyRate();
+    return principal / months + principal / months * monthlyRate;
+  }
+
+  private getMortgageMetrics(): MetricItem[] {
+    const principal: number = this.getLoanPrincipal();
+    const months: number = this.getLoanMonths();
+    const monthlyRate: number = this.getMonthlyRate();
+    if (this.repaymentType === 'interest') {
+      const monthlyPayment: number = this.getEqualInterestPayment();
+      const totalPayment: number = monthlyPayment * months;
+      return [
+        { label: '总利息', value: this.formatMoney(totalPayment - principal) },
+        { label: '总还款', value: this.formatMoney(totalPayment) },
+        { label: '还款期数', value: `${months} 期` }
+      ];
+    }
+    const totalInterest: number = principal * monthlyRate * (months + 1) / 2;
+    return [
+      { label: '末月月供', value: this.formatMoney(this.getEqualPrincipalLastPayment()) },
+      { label: '总利息', value: this.formatMoney(totalInterest) },
+      { label: '总还款', value: this.formatMoney(principal + totalInterest) }
+    ];
+  }
+
+  @Builder
+  CategoryTabs() {
+    Row() {
+      Scroll() {
+        Row({ space: 8 }) {
+          ForEach(this.categoryItems, (item: CalculatorCategory) => {
+            Row() {
+              Text(item.icon)
+                .fontSize(15)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.activeKey === item.key ? Color.White : '#147C78')
+                .width(28)
+                .height(28)
+                .textAlign(TextAlign.Center)
+                .borderRadius(8)
+                .backgroundColor(this.activeKey === item.key ? '#147C78' : '#DFF2F0')
+              Text(item.title)
+                .fontSize(14)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.activeKey === item.key ? '#147C78' : '#334247')
+                .margin({ left: 7 })
+            }
+            .height(46)
+            .padding({ left: 10, right: 12 })
+            .borderRadius(8)
+            .backgroundColor(this.activeKey === item.key ? '#F1FBFA' : Color.White)
+            .border({ width: 1, color: this.activeKey === item.key ? '#147C78' : '#E4ECEB' })
+            .onClick((): void => {
+              this.selectCategory(item.key);
+            })
+          }, (item: CalculatorCategory): string => item.key)
+        }
+        .padding({ left: 16, right: 8, bottom: 2 })
+      }
+      .scrollable(ScrollDirection.Horizontal)
+      .scrollBar(BarState.Off)
+      .layoutWeight(1)
+
+      Button('≡')
+        .height(42)
+        .width(42)
+        .fontSize(22)
+        .fontColor('#147C78')
+        .backgroundColor('rgba(0,0,0,0)')
+        .borderRadius(0)
+        .margin({ right: 16, left: 4 })
+        .onClick((): void => {
+          this.showCategoryEditor = true;
+        })
+    }
+    .width('100%')
+    .height(54)
+  }
+
+  @Builder
+  CategoryEditorDialog() {
+    Column() {
+      Blank()
+      Column() {
+        Row() {
+          Column() {
+            Text('编辑分类顺序')
+              .fontSize(20)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#182326')
+            Text('使用上移、下移调整顶部标签顺序。')
+              .fontSize(13)
+              .fontColor('#667579')
+              .margin({ top: 6 })
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+          Button('重置')
+            .height(34)
+            .width(62)
+            .fontSize(13)
+            .fontColor('#147C78')
+            .backgroundColor('#DFF2F0')
+            .borderRadius(8)
+            .onClick((): void => {
+              this.resetCategoryOrder();
+            })
+        }
+        .width('100%')
+        .margin({ bottom: 14 })
+
+        Column() {
+          ForEach(this.categoryItems, (item: CalculatorCategory, index: number) => {
+            Row() {
+              Text(item.icon)
+                .fontSize(15)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(Color.White)
+                .width(30)
+                .height(30)
+                .textAlign(TextAlign.Center)
+                .borderRadius(8)
+                .backgroundColor('#147C78')
+              Text(item.title)
+                .fontSize(15)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#182326')
+                .margin({ left: 10 })
+                .layoutWeight(1)
+              Button('上移')
+                .height(34)
+                .width(58)
+                .fontSize(13)
+                .fontColor(index === 0 ? '#9AA7AA' : '#147C78')
+                .backgroundColor(index === 0 ? '#F2F5F5' : '#DFF2F0')
+                .borderRadius(8)
+                .enabled(index > 0)
+                .onClick((): void => {
+                  this.moveCategory(index, index - 1);
+                })
+              Button('下移')
+                .height(34)
+                .width(58)
+                .fontSize(13)
+                .fontColor(index === this.categoryItems.length - 1 ? '#9AA7AA' : '#147C78')
+                .backgroundColor(index === this.categoryItems.length - 1 ? '#F2F5F5' : '#DFF2F0')
+                .borderRadius(8)
+                .margin({ left: 8 })
+                .enabled(index < this.categoryItems.length - 1)
+                .onClick((): void => {
+                  this.moveCategory(index, index + 1);
+                })
+            }
+            .width('100%')
+            .height(50)
+            .padding({ left: 10, right: 10 })
+            .borderRadius(8)
+            .backgroundColor(item.key === this.activeKey ? '#F1FBFA' : '#FFFFFF')
+            .border({ width: 1, color: item.key === this.activeKey ? '#147C78' : '#E4ECEB' })
+            .margin({ bottom: 8 })
+          }, (item: CalculatorCategory): string => item.key)
+        }
+        .width('100%')
+
+        Row() {
+          Button('完成')
+            .height(44)
+            .layoutWeight(1)
+            .fontSize(16)
+            .fontColor(Color.White)
+            .backgroundColor('#147C78')
+            .borderRadius(8)
+            .onClick((): void => {
+              this.showCategoryEditor = false;
+            })
+        }
+        .width('100%')
+        .margin({ top: 10 })
+      }
+      .width('88%')
+      .padding({ left: 18, right: 18, top: 20, bottom: 18 })
+      .borderRadius(18)
+      .backgroundColor(Color.White)
+      Blank()
+    }
+    .width('100%')
+    .height('100%')
+    .padding({ left: 16, right: 16 })
+    .backgroundColor('#00000066')
+  }
+
+  @Builder
+  MetricList(items: MetricItem[]) {
+    Column() {
+      ForEach(items, (item: MetricItem) => {
+        Row() {
+          Text(item.label)
+            .fontSize(14)
+            .fontColor('#667579')
+          Text(item.value)
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
+        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+      }, (item: MetricItem): string => item.label)
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
+  SectionTitle(title: string) {
+    Text(title)
+      .fontSize(16)
+      .fontWeight(FontWeight.Bold)
+      .fontColor('#182326')
+      .margin({ bottom: 12 })
+  }
+
+  @Builder
+  InputField(label: string, value: string, placeholder: string, onChange: (value: string) => void) {
+    Column() {
+      Text(label)
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#415155')
+        .margin({ bottom: 7 })
+      TextInput({ text: value, placeholder: placeholder })
+        .height(44)
+        .fontSize(16)
+        .backgroundColor('#FBFDFD')
+        .borderRadius(8)
+        .border({ width: 1, color: '#DCE5E4' })
+        .padding({ left: 12, right: 12 })
+        .type(InputType.Number)
+        .onChange(onChange)
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
+  ConverterPanel() {
+    Column() {
+      this.SectionTitle(this.getConverterConfig().title)
+      Text(this.getConverterConfig().desc)
+        .fontSize(14)
+        .fontColor('#667579')
+        .lineHeight(21)
+        .margin({ bottom: 16 })
+      this.InputField('数值', this.converterValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
+        this.converterValue = value;
+      })
+      Row() {
+        Column() {
+          Text('从')
+            .fontSize(13)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#415155')
+            .margin({ bottom: 7 })
+          Select(this.getUnitSelectOptions(this.getConverterConfig().units))
+            .selected(this.clampUnitIndex(this.fromIndex, this.getConverterConfig().units))
+            .value(this.getConverterConfig().units[this.clampUnitIndex(this.fromIndex, this.getConverterConfig().units)].name)
+            .height(44)
+            .onSelect((index: number): void => {
+              this.fromIndex = index;
+            })
+        }
+        .layoutWeight(1)
+        .margin({ right: 6 })
+        Column() {
+          Text('到')
+            .fontSize(13)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#415155')
+            .margin({ bottom: 7 })
+          Select(this.getUnitSelectOptions(this.getConverterConfig().units))
+            .selected(this.clampUnitIndex(this.toIndex, this.getConverterConfig().units))
+            .value(this.getConverterConfig().units[this.clampUnitIndex(this.toIndex, this.getConverterConfig().units)].name)
+            .height(44)
+            .onSelect((index: number): void => {
+              this.toIndex = index;
+            })
+        }
+        .layoutWeight(1)
+        .margin({ left: 6 })
+      }
+      .width('100%')
+      .margin({ top: 14 })
+
+      this.ResultCard('换算结果', this.getConversionText(), this.getConverterConfig().estimateNote)
+    }
+    .width('100%')
+  }
+
+  @Builder
+  StopwatchPanel() {
+    Column() {
+      this.SectionTitle('秒表')
+      Text(this.formatDuration(this.stopwatchMs))
+        .fontSize(42)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#102729')
+        .width('100%')
+        .textAlign(TextAlign.Center)
+        .margin({ top: 20, bottom: 22 })
+      Row() {
+        Button(this.stopwatchRunning ? '暂停' : '开始')
+          .height(42)
+          .layoutWeight(1)
+          .margin({ right: 5 })
+          .backgroundColor('#147C78')
+          .onClick((): void => {
+            if (this.stopwatchRunning) {
+              this.stopTimer();
+            } else {
+              this.startTimer();
+            }
+          })
+        Button('计次')
+          .height(42)
+          .layoutWeight(1)
+          .margin({ left: 5, right: 5 })
+          .fontColor('#334247')
+          .backgroundColor('#EEF4F3')
+          .onClick((): void => {
+            this.addLap();
+          })
+        Button('重置')
+          .height(42)
+          .layoutWeight(1)
+          .margin({ left: 5 })
+          .fontColor('#334247')
+          .backgroundColor('#EEF4F3')
+          .onClick((): void => {
+            this.resetTimer();
+          })
+      }
+      .width('100%')
+      Column() {
+        ForEach(this.lapItems, (item: string, index: number) => {
+          Row() {
+            Text(`计次 ${this.lapItems.length - index}`)
+              .fontSize(14)
+              .fontColor('#667579')
+            Text(item)
+              .fontSize(15)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#182326')
+          }
+          .justifyContent(FlexAlign.SpaceBetween)
+          .width('100%')
+          .padding({ top: 12, bottom: 12 })
+          .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+        }, (item: string): string => item)
+      }
+      .width('100%')
+      .margin({ top: 18 })
+    }
+    .width('100%')
+  }
+
+  @Builder
+  TaxPanel() {
+    Column() {
+      this.SectionTitle('个税估算')
+      Text('按中国大陆综合所得年度口径估算，基础减除费用按 60000 元/年。')
+        .fontSize(14)
+        .fontColor('#667579')
+        .lineHeight(21)
+        .margin({ bottom: 16 })
+      this.InputField('月收入（元）', this.monthlyIncome, '请输入月收入', (value: string): void => {
+        this.monthlyIncome = value;
+      })
+      this.InputField('三险一金（元/月）', this.monthlyInsurance, '请输入三险一金', (value: string): void => {
+        this.monthlyInsurance = value;
+      })
+      this.InputField('专项附加扣除（元/月）', this.monthlyDeduction, '请输入扣除', (value: string): void => {
+        this.monthlyDeduction = value;
+      })
+      this.InputField('已预缴税额（元）', this.prepaidTax, '请输入已预缴税额', (value: string): void => {
+        this.prepaidTax = value;
+      })
+      this.ResultCard('年度应纳税额', this.formatMoney(this.getTaxDue()), '估算结果仅供参考，未覆盖城市社保、公积金差异。')
+      this.MetricList(this.getTaxMetrics())
+    }
+    .width('100%')
+  }
+
+  @Builder
+  MortgagePanel() {
+    Column() {
+      this.SectionTitle('房贷计算')
+      Text('支持等额本息和等额本金，输入商业贷款金额、年限和年利率。')
+        .fontSize(14)
+        .fontColor('#667579')
+        .lineHeight(21)
+        .margin({ bottom: 16 })
+      this.InputField('贷款总额（万元）', this.loanAmount, '请输入贷款总额', (value: string): void => {
+        this.loanAmount = value;
+      })
+      this.InputField('贷款年限（年）', this.loanYears, '请输入贷款年限', (value: string): void => {
+        this.loanYears = value;
+      })
+      this.InputField('年利率（%）', this.annualRate, '请输入年利率', (value: string): void => {
+        this.annualRate = value;
+      })
+      Row() {
+        Button('等额本息')
+          .height(38)
+          .layoutWeight(1)
+          .margin({ right: 4 })
+          .fontColor(this.repaymentType === 'interest' ? Color.White : '#147C78')
+          .backgroundColor(this.repaymentType === 'interest' ? '#147C78' : '#DFF2F0')
+          .onClick((): void => {
+            this.repaymentType = 'interest';
+          })
+        Button('等额本金')
+          .height(38)
+          .layoutWeight(1)
+          .margin({ left: 4 })
+          .fontColor(this.repaymentType === 'principal' ? Color.White : '#147C78')
+          .backgroundColor(this.repaymentType === 'principal' ? '#147C78' : '#DFF2F0')
+          .onClick((): void => {
+            this.repaymentType = 'principal';
+          })
+      }
+      .width('100%')
+      .margin({ top: 2 })
+      this.ResultCard(this.repaymentType === 'interest' ? '预计月供' : '首月月供',
+        this.formatMoney(this.repaymentType === 'interest' ? this.getEqualInterestPayment() : this.getEqualPrincipalFirstPayment()),
+        '结果按输入利率本地计算，仅供参考。')
+      this.MetricList(this.getMortgageMetrics())
+    }
+    .width('100%')
+  }
+
+  @Builder
+  ResultCard(label: string, value: string, note: string) {
+    Column() {
+      Text(label)
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('rgba(255,255,255,0.72)')
+      Text(value)
+        .fontSize(34)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(Color.White)
+        .width('100%')
+        .margin({ top: 10, bottom: 8 })
+      Text(note === '' ? '输入变化后结果会实时更新。' : note)
+        .fontSize(13)
+        .fontColor('rgba(255,255,255,0.68)')
+        .lineHeight(19)
+    }
+    .width('100%')
+    .padding(18)
+    .borderRadius(8)
+    .backgroundColor('#102729')
+    .margin({ top: 18 })
+  }
+
+  @Builder
+  ActiveToolPanel() {
+    if (this.isConverterCategory(this.activeKey)) {
+      this.ConverterPanel()
+    } else if (this.activeKey === 'stopwatch') {
+      this.StopwatchPanel()
+    } else if (this.activeKey === 'tax') {
+      this.TaxPanel()
+    } else {
+      this.MortgagePanel()
+    }
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.TopStart }) {
+      Column() {
+        Column() {
+          Text('Hola Calculator')
+            .fontSize(13)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#147C78')
+          Text('万能计算器')
+            .fontSize(30)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .margin({ top: 8 })
+          Text(this.getActiveCategory().desc)
+            .fontSize(14)
+            .fontColor('#667579')
+            .lineHeight(21)
+            .margin({ top: 10 })
+        }
+        .alignItems(HorizontalAlign.Start)
+        .width('100%')
+        .padding({ left: 34, right: 34, top: 24, bottom: 12 })
+
+        this.CategoryTabs()
+
+        Scroll() {
+          Column() {
+            Column() {
+              this.ActiveToolPanel()
+            }
+            .width('100%')
+            .padding(18)
+            .borderRadius(16)
+            .backgroundColor(Color.White)
+            .border({ width: 1, color: '#E4ECEB' })
+            .align(Alignment.TopStart)
+            .alignSelf(ItemAlign.Start)
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Start)
+          .justifyContent(FlexAlign.Start)
+          .padding({ left: 16, right: 16, top: 10, bottom: 28 })
+          .align(Alignment.TopStart)
+          .alignSelf(ItemAlign.Start)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .scrollBar(BarState.Off)
+        .align(Alignment.TopStart)
+        .alignSelf(ItemAlign.Start)
+      }
+      .width('100%')
+      .height('100%')
+      .alignItems(HorizontalAlign.Start)
+      .justifyContent(FlexAlign.Start)
+      .backgroundColor('#F5F7F8')
+
+      if (this.showCategoryEditor) {
+        this.CategoryEditorDialog()
+      }
+    }
+    .width('100%')
+    .height('100%')
+  }
+}

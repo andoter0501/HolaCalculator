@@ -1,0 +1,50 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "/Users/a123/.ohos/config/default_HolaCalculator_W9-ptNyneCQH24_G4uWfuJfFPXG6pIG9V1h6MrIfvpI=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B390EAEBA90751E5B5AF08991F4B8162B91E0FA45FEA3EDD2EB2ADA390E80D08D28A19640B87773",
+          "profile": "/Users/a123/.ohos/config/default_HolaCalculator_W9-ptNyneCQH24_G4uWfuJfFPXG6pIG9V1h6MrIfvpI=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "/Users/a123/.ohos/config/default_HolaCalculator_W9-ptNyneCQH24_G4uWfuJfFPXG6pIG9V1h6MrIfvpI=.p12",
+          "storePassword": "0000001B0114A97BCDB0470A70127E8D95AC0B02FB9A8F00D46401C90B0C73D7B081AA6735C4FE4F1AC249"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "5.0.0(12)",
+        "targetSdkVersion": "5.0.0(12)",
+        "runtimeOS": "HarmonyOS"
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug"
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

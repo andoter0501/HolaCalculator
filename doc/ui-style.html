@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>万能计算器 UI 样式</title>
+  <style>
+    :root {
+      --bg: #f5f7f8;
+      --surface: #ffffff;
+      --surface-2: #eef4f3;
+      --text: #182326;
+      --muted: #667579;
+      --line: #dce5e4;
+      --primary: #147c78;
+      --primary-soft: #dff2f0;
+      --accent: #2f6fed;
+      --warn: #a85f00;
+      --shadow: 0 16px 38px rgba(26, 45, 50, 0.12);
+      --radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, #eaf4f3 0, rgba(234, 244, 243, 0) 330px),
+        var(--bg);
+      color: var(--text);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 32px 18px 48px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(320px, 430px) minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+
+    .phone {
+      overflow: hidden;
+      border: 1px solid rgba(32, 55, 59, 0.12);
+      border-radius: 28px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 22px 8px;
+      color: #263436;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .signal,
+    .battery {
+      display: block;
+      border: 1.8px solid currentColor;
+      border-radius: 3px;
+    }
+
+    .signal {
+      width: 17px;
+      height: 11px;
+      border-top: 0;
+      border-left: 0;
+      transform: skewX(-12deg);
+    }
+
+    .battery {
+      width: 22px;
+      height: 11px;
+      position: relative;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      right: -4px;
+      top: 3px;
+      width: 2px;
+      height: 4px;
+      background: currentColor;
+      border-radius: 2px;
+    }
+
+    .app {
+      padding: 16px;
+      background: #f8fafb;
+    }
+
+    .hero {
+      padding: 4px 2px 18px;
+    }
+
+    .kicker {
+      margin: 0 0 8px;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .quick-result {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: end;
+      margin: 2px 0 16px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .quick-result span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .quick-result strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .pill {
+      min-width: 64px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tool-card {
+      min-height: 102px;
+      padding: 13px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 150ms ease, transform 150ms ease, background 150ms ease;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(20, 124, 120, 0.28);
+    }
+
+    .tool-card.active {
+      border-color: var(--primary);
+      background: #f1fbfa;
+    }
+
+    .tool-icon {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 10px;
+      place-items: center;
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .tool-title {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .tool-desc {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .detail {
+      border: 1px solid rgba(32, 55, 59, 0.12);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .detail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .detail-title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    .detail-copy {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .detail-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+      gap: 22px;
+      padding: 24px;
+    }
+
+    .panel {
+      min-width: 0;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 13px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: #415155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 118px;
+      gap: 10px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfdfd;
+      color: var(--text);
+      outline: 0;
+      padding: 0 12px;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(20, 124, 120, 0.13);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #edf4f3;
+    }
+
+    .segmented button {
+      min-height: 36px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #506166;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .segmented button.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 2px 7px rgba(31, 56, 61, 0.1);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      min-height: 42px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      padding: 0 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn.ghost {
+      border-color: var(--line);
+      background: var(--surface);
+      color: #334247;
+    }
+
+    .result-card {
+      padding: 18px;
+      border-radius: var(--radius);
+      background: #102729;
+      color: #fff;
+    }
+
+    .result-label {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .result-value {
+      margin: 10px 0 6px;
+      overflow-wrap: anywhere;
+      font-size: 34px;
+      line-height: 1.1;
+      font-weight: 850;
+    }
+
+    .result-note {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.68);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .metric-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+      color: #304044;
+      font-size: 14px;
+    }
+
+    .metric:last-child {
+      border-bottom: 0;
+    }
+
+    .metric strong {
+      color: var(--text);
+      font-size: 15px;
+      text-align: right;
+    }
+
+    .notice {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: var(--radius);
+      background: #fff7e8;
+      color: var(--warn);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .desktop-note {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .phone {
+        max-width: 430px;
+        margin: 0 auto;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page {
+        padding: 12px 0 28px;
+      }
+
+      .phone,
+      .detail {
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .detail-body {
+        grid-template-columns: 1fr;
+        padding: 18px;
+      }
+
+      .detail-head {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 18px;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .input-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="shell">
+      <section class="phone" aria-label="手机端首页预览">
+        <div class="status">
+          <span>09:41</span>
+          <span class="status-icons" aria-hidden="true">
+            <i class="signal"></i>
+            <i class="battery"></i>
+          </span>
+        </div>
+        <div class="app">
+          <header class="hero">
+            <p class="kicker">Hola Calculator</p>
+            <h1>万能计算器</h1>
+            <p class="subtitle">单位换算、秒表、个税、房贷集中到一个清爽的工具台。</p>
+          </header>
+
+          <div class="quick-result">
+            <div>
+              <span>最近使用</span>
+              <strong id="recentTitle">房贷计算</strong>
+            </div>
+            <div class="pill" id="recentPill">月供</div>
+          </div>
+
+          <nav class="grid" aria-label="计算器分类">
+            <button class="tool-card" data-tool="length" type="button">
+              <span class="tool-icon">m</span>
+              <span class="tool-title">长度</span>
+              <span class="tool-desc">米、厘米、英尺、英里</span>
+            </button>
+            <button class="tool-card" data-tool="volume" type="button">
+              <span class="tool-icon">L</span>
+              <span class="tool-title">体积</span>
+              <span class="tool-desc">升、毫升、立方米</span>
+            </button>
+            <button class="tool-card" data-tool="time" type="button">
+              <span class="tool-icon">h</span>
+              <span class="tool-title">时间</span>
+              <span class="tool-desc">秒、分钟、小时、天</span>
+            </button>
+            <button class="tool-card" data-tool="stopwatch" type="button">
+              <span class="tool-icon">⏱</span>
+              <span class="tool-title">秒表</span>
+              <span class="tool-desc">计时、暂停、计次</span>
+            </button>
+            <button class="tool-card" data-tool="weight" type="button">
+              <span class="tool-icon">kg</span>
+              <span class="tool-title">重量</span>
+              <span class="tool-desc">克、千克、磅、吨</span>
+            </button>
+            <button class="tool-card" data-tool="area" type="button">
+              <span class="tool-icon">㎡</span>
+              <span class="tool-title">面积</span>
+              <span class="tool-desc">平方米、公顷、亩</span>
+            </button>
+            <button class="tool-card" data-tool="tax" type="button">
+              <span class="tool-icon">¥</span>
+              <span class="tool-title">个税</span>
+              <span class="tool-desc">年度综合所得估算</span>
+            </button>
+            <button class="tool-card active" data-tool="mortgage" type="button">
+              <span class="tool-icon">%</span>
+              <span class="tool-title">房贷</span>
+              <span class="tool-desc">等额本息、等额本金</span>
+            </button>
+          </nav>
+        </div>
+      </section>
+
+      <section class="detail" aria-label="工具详情样式">
+        <div class="detail-head">
+          <div>
+            <h2 class="detail-title" id="detailTitle">房贷计算</h2>
+            <p class="detail-copy" id="detailCopy">输入贷款金额、利率和年限，切换还款方式查看月供与总利息。</p>
+          </div>
+          <span class="pill" id="detailBadge">商业贷款</span>
+        </div>
+
+        <div class="detail-body">
+          <div class="panel">
+            <h3 class="section-title">输入</h3>
+            <div class="form-grid" id="formFields"></div>
+            <div class="actions">
+              <button class="btn primary" type="button">计算</button>
+              <button class="btn ghost" type="button">清空</button>
+              <button class="btn ghost" type="button">复制结果</button>
+            </div>
+          </div>
+
+          <aside class="panel">
+            <h3 class="section-title">结果</h3>
+            <div class="result-card">
+              <p class="result-label" id="resultLabel">预计月供</p>
+              <div class="result-value" id="resultValue">¥ 5,307.27</div>
+              <p class="result-note" id="resultNote">按 100 万、30 年、年利率 4.2% 的等额本息样式示例。</p>
+            </div>
+            <div class="metric-list" id="metrics"></div>
+            <div class="notice" id="notice">计算结果用于 UI 展示，真实版本会接入本地公式并展示估算说明。</div>
+          </aside>
+        </div>
+      </section>
+    </div>
+
+    <p class="desktop-note">这是静态 HTML UI 原型，点击左侧 8 个入口可查看不同计算器的表单风格。</p>
+  </main>
+
+  <script>
+    const tools = {
+      length: {
+        title: "长度换算",
+        copy: "输入一个长度数值，选择原单位和目标单位，结果即时展示。",
+        badge: "单位换算",
+        recent: "长度换算",
+        pill: "米",
+        fields: [
+          ["数值", "128", "米"],
+          ["从", "", "米"],
+          ["到", "", "厘米"]
+        ],
+        resultLabel: "换算结果",
+        resultValue: "12,800 cm",
+        resultNote: "1 米 = 100 厘米，结果支持长数字自动换行。",
+        metrics: [["常用", "米 / 厘米 / 千米"], ["英制", "英寸 / 英尺 / 英里"]]
+      },
+      volume: {
+        title: "体积换算",
+        copy: "覆盖日常容量和立方单位，适合厨房、物流、工程估算。",
+        badge: "容量",
+        recent: "体积换算",
+        pill: "升",
+        fields: [
+          ["数值", "3.5", "升"],
+          ["从", "", "升"],
+          ["到", "", "毫升"]
+        ],
+        resultLabel: "换算结果",
+        resultValue: "3,500 ml",
+        resultNote: "升、毫升、立方厘米、立方米保持统一输入体验。",
+        metrics: [["液体容量", "ml / L"], ["空间体积", "cm³ / m³"]]
+      },
+      time: {
+        title: "时间换算",
+        copy: "秒、分钟、小时、天等常见单位快速换算。",
+        badge: "时间",
+        recent: "时间换算",
+        pill: "小时",
+        fields: [
+          ["数值", "72", "小时"],
+          ["从", "", "小时"],
+          ["到", "", "天"]
+        ],
+        resultLabel: "换算结果",
+        resultValue: "3 天",
+        resultNote: "月和年按固定估算值展示，正式版会标明口径。",
+        metrics: [["精确单位", "秒 / 分 / 时 / 天"], ["估算单位", "月 / 年"]]
+      },
+      stopwatch: {
+        title: "秒表",
+        copy: "保留大号计时显示、核心控制和计次列表入口。",
+        badge: "计时",
+        recent: "秒表",
+        pill: "计次",
+        fields: [
+          ["当前计时", "00:08:24.16", "运行中"],
+          ["最近计次", "00:01:12.43", "第 3 次"]
+        ],
+        resultLabel: "当前时间",
+        resultValue: "00:08:24.16",
+        resultNote: "按钮区正式版会切换为开始、暂停、继续、重置、计次。",
+        metrics: [["计次 3", "00:01:12.43"], ["计次 2", "00:03:08.29"]]
+      },
+      weight: {
+        title: "重量换算",
+        copy: "支持公制和英制重量单位，适合购物、健身和物流估算。",
+        badge: "重量",
+        recent: "重量换算",
+        pill: "kg",
+        fields: [
+          ["数值", "12.5", "千克"],
+          ["从", "", "千克"],
+          ["到", "", "磅"]
+        ],
+        resultLabel: "换算结果",
+        resultValue: "27.56 lb",
+        resultNote: "正式版本会统一保留有效小数并允许复制结果。",
+        metrics: [["公制", "mg / g / kg / t"], ["英制", "oz / lb"]]
+      },
+      area: {
+        title: "面积换算",
+        copy: "覆盖平方米、亩、公顷、平方千米等常用面积单位。",
+        badge: "面积",
+        recent: "面积换算",
+        pill: "㎡",
+        fields: [
+          ["数值", "120", "平方米"],
+          ["从", "", "平方米"],
+          ["到", "", "亩"]
+        ],
+        resultLabel: "换算结果",
+        resultValue: "0.18 亩",
+        resultNote: "适合装修、土地、房产相关面积快速估算。",
+        metrics: [["常用", "㎡ / 亩 / 公顷"], ["扩展", "平方英尺"]]
+      },
+      tax: {
+        title: "个税估算",
+        copy: "按中国大陆综合所得常用口径估算年度应纳税额。",
+        badge: "年度估算",
+        recent: "个税估算",
+        pill: "税后",
+        fields: [
+          ["月收入", "20000", "元"],
+          ["三险一金", "3200", "元/月"],
+          ["专项附加扣除", "2000", "元/月"],
+          ["已预缴税额", "5800", "元"]
+        ],
+        resultLabel: "年度应纳税额",
+        resultValue: "¥ 7,080.00",
+        resultNote: "正式版本会内置 7 级税率表，结果仅供参考。",
+        metrics: [["应纳税所得额", "¥ 70,400"], ["估算税后收入", "¥ 190,520"]]
+      },
+      mortgage: {
+        title: "房贷计算",
+        copy: "输入贷款金额、利率和年限，切换还款方式查看月供与总利息。",
+        badge: "商业贷款",
+        recent: "房贷计算",
+        pill: "月供",
+        fields: [
+          ["贷款总额", "100", "万元"],
+          ["贷款年限", "30", "年"],
+          ["年利率", "4.2", "%"],
+          ["还款方式", "", "等额本息"]
+        ],
+        resultLabel: "预计月供",
+        resultValue: "¥ 5,307.27",
+        resultNote: "按 100 万、30 年、年利率 4.2% 的等额本息样式示例。",
+        metrics: [["总利息", "¥ 910,617"], ["总还款", "¥ 1,910,617"]]
+      }
+    };
+
+    const formFields = document.querySelector("#formFields");
+    const metrics = document.querySelector("#metrics");
+    const cards = document.querySelectorAll(".tool-card");
+
+    function fieldTemplate(field) {
+      const label = field[0];
+      const value = field[1];
+      const unit = field[2];
+
+      if (label === "还款方式") {
+        return `
+          <div class="field">
+            <label>${label}</label>
+            <div class="segmented">
+              <button class="active" type="button">等额本息</button>
+              <button type="button">等额本金</button>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="field">
+          <label>${label}</label>
+          <div class="input-row">
+            <input value="${value}" aria-label="${label}">
+            <select aria-label="${label}单位">
+              <option>${unit}</option>
+              <option>自动</option>
+            </select>
+          </div>
+        </div>
+      `;
+    }
+
+    function render(toolName) {
+      const tool = tools[toolName];
+      document.querySelector("#detailTitle").textContent = tool.title;
+      document.querySelector("#detailCopy").textContent = tool.copy;
+      document.querySelector("#detailBadge").textContent = tool.badge;
+      document.querySelector("#recentTitle").textContent = tool.recent;
+      document.querySelector("#recentPill").textContent = tool.pill;
+      document.querySelector("#resultLabel").textContent = tool.resultLabel;
+      document.querySelector("#resultValue").textContent = tool.resultValue;
+      document.querySelector("#resultNote").textContent = tool.resultNote;
+
+      formFields.innerHTML = tool.fields.map(fieldTemplate).join("");
+      metrics.innerHTML = tool.metrics
+        .map((item) => `<div class="metric"><span>${item[0]}</span><strong>${item[1]}</strong></div>`)
+        .join("");
+
+      cards.forEach((card) => {
+        card.classList.toggle("active", card.dataset.tool === toolName);
+      });
+    }
+
+    cards.forEach((card) => {
+      card.addEventListener("click", () => render(card.dataset.tool));
+    });
+
+    render("mortgage");
+  </script>
+</body>
+</html>
