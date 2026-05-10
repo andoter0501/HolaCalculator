@@ -114,6 +114,8 @@ struct Index {
   @State converterValue: string = '128';
   @State fromIndex: number = 2;
   @State toIndex: number = 1;
+  @State fromUnitName: string = '米';
+  @State toUnitName: string = '厘米';
   @State conversionResultText: string = '12800 cm';
   @State stopwatchMs: number = 0;
   @State stopwatchRunning: boolean = false;
@@ -133,7 +135,7 @@ struct Index {
   }
 
   aboutToAppear(): void {
-    this.updateConversionResult('length', this.converterValue, this.fromIndex, this.toIndex);
+    this.updateConversionResult('length', this.converterValue, this.fromUnitName, this.toUnitName);
   }
 
   private getConverterConfig(): ConverterConfig {
@@ -253,6 +255,20 @@ struct Index {
     return index;
   }
 
+  private findUnitIndexByName(units: UnitDefinition[], unitName: string): number {
+    for (let index: number = 0; index < units.length; index++) {
+      if (units[index].name === unitName) {
+        return index;
+      }
+    }
+    return 0;
+  }
+
+  private findUnitByName(units: UnitDefinition[], unitName: string): UnitDefinition {
+    const index: number = this.findUnitIndexByName(units, unitName);
+    return units[index];
+  }
+
   private formatNumber(value: number, precision: number = 2): string {
     if (!Number.isFinite(value)) {
       return '0';
@@ -270,41 +286,61 @@ struct Index {
 
   private getConversionValue(): number {
     const config: ConverterConfig = this.getConverterConfig();
-    const fromUnit: UnitDefinition = config.units[this.clampUnitIndex(this.fromIndex, config.units)];
-    const toUnit: UnitDefinition = config.units[this.clampUnitIndex(this.toIndex, config.units)];
+    const fromUnit: UnitDefinition = this.findUnitByName(config.units, this.fromUnitName);
+    const toUnit: UnitDefinition = this.findUnitByName(config.units, this.toUnitName);
     const input: number = this.parseNumber(this.converterValue);
     return input * fromUnit.factor / toUnit.factor;
   }
 
   private getConversionText(): string {
     const config: ConverterConfig = this.getConverterConfig();
-    const toUnit: UnitDefinition = config.units[this.clampUnitIndex(this.toIndex, config.units)];
+    const toUnit: UnitDefinition = this.findUnitByName(config.units, this.toUnitName);
     return `${this.formatNumber(this.getConversionValue(), config.precision)} ${toUnit.symbol}`;
   }
 
-  private getConversionTextByState(key: CalculatorKey, inputValue: string, fromIndex: number, toIndex: number): string {
+  private getConversionTextByState(key: CalculatorKey, inputValue: string, fromUnitName: string, toUnitName: string): string {
     const config: ConverterConfig = this.getConverterConfigByKey(key);
-    const fromUnit: UnitDefinition = config.units[this.clampUnitIndex(fromIndex, config.units)];
-    const toUnit: UnitDefinition = config.units[this.clampUnitIndex(toIndex, config.units)];
+    const fromUnit: UnitDefinition = this.findUnitByName(config.units, fromUnitName);
+    const toUnit: UnitDefinition = this.findUnitByName(config.units, toUnitName);
     const input: number = this.parseNumber(inputValue);
     const result: number = input * fromUnit.factor / toUnit.factor;
     return `${this.formatNumber(result, config.precision)} ${toUnit.symbol}`;
   }
 
-  private updateConversionResult(key: CalculatorKey, inputValue: string, fromIndex: number, toIndex: number): void {
-    this.conversionResultText = this.getConversionTextByState(key, inputValue, fromIndex, toIndex);
+  private updateConversionResult(key: CalculatorKey, inputValue: string, fromUnitName: string, toUnitName: string): void {
+    this.conversionResultText = this.getConversionTextByState(key, inputValue, fromUnitName, toUnitName);
+  }
+
+  private setFromUnitName(unitName: string): void {
+    const config: ConverterConfig = this.getConverterConfig();
+    const nextIndex: number = this.findUnitIndexByName(config.units, unitName);
+    const nextUnitName: string = config.units[nextIndex].name;
+    this.fromUnitName = nextUnitName;
+    this.fromIndex = nextIndex;
+    this.updateConversionResult(this.activeKey, this.converterValue, nextUnitName, this.toUnitName);
+  }
+
+  private setToUnitName(unitName: string): void {
+    const config: ConverterConfig = this.getConverterConfig();
+    const nextIndex: number = this.findUnitIndexByName(config.units, unitName);
+    const nextUnitName: string = config.units[nextIndex].name;
+    this.toUnitName = nextUnitName;
+    this.toIndex = nextIndex;
+    this.updateConversionResult(this.activeKey, this.converterValue, this.fromUnitName, nextUnitName);
   }
 
   private setFromUnitIndex(index: number): void {
     const nextIndex: number = this.clampUnitIndex(index, this.getConverterConfig().units);
     this.fromIndex = nextIndex;
-    this.updateConversionResult(this.activeKey, this.converterValue, nextIndex, this.toIndex);
+    this.fromUnitName = this.getConverterConfig().units[nextIndex].name;
+    this.updateConversionResult(this.activeKey, this.converterValue, this.fromUnitName, this.toUnitName);
   }
 
   private setToUnitIndex(index: number): void {
     const nextIndex: number = this.clampUnitIndex(index, this.getConverterConfig().units);
     this.toIndex = nextIndex;
-    this.updateConversionResult(this.activeKey, this.converterValue, this.fromIndex, nextIndex);
+    this.toUnitName = this.getConverterConfig().units[nextIndex].name;
+    this.updateConversionResult(this.activeKey, this.converterValue, this.fromUnitName, this.toUnitName);
   }
 
   private openUnitPicker(target: 'from' | 'to'): void {
@@ -315,14 +351,14 @@ struct Index {
     }
   }
 
-  private selectUnitIndex(target: 'from' | 'to', index: number): void {
-    if (target === 'from') {
-      this.setFromUnitIndex(index);
-      this.showFromUnitPicker = false;
-    } else {
-      this.setToUnitIndex(index);
-      this.showToUnitPicker = false;
-    }
+  private selectFromUnitName(unitName: string): void {
+    this.setFromUnitName(unitName);
+    this.showFromUnitPicker = false;
+  }
+
+  private selectToUnitName(unitName: string): void {
+    this.setToUnitName(unitName);
+    this.showToUnitPicker = false;
   }
 
   private resetConverterIndexes(key: CalculatorKey): void {
@@ -350,7 +386,10 @@ struct Index {
     }
     this.fromIndex = nextFromIndex;
     this.toIndex = nextToIndex;
-    this.updateConversionResult(key, this.converterValue, nextFromIndex, nextToIndex);
+    const config: ConverterConfig = this.getConverterConfigByKey(key);
+    this.fromUnitName = config.units[this.clampUnitIndex(nextFromIndex, config.units)].name;
+    this.toUnitName = config.units[this.clampUnitIndex(nextToIndex, config.units)].name;
+    this.updateConversionResult(key, this.converterValue, this.fromUnitName, this.toUnitName);
   }
 
   private selectCategory(key: CalculatorKey): void {
@@ -718,7 +757,7 @@ struct Index {
   }
 
   @Builder
-  UnitPickerDialog(target: 'from' | 'to') {
+  FromUnitPickerDialog() {
     Column() {
       Blank()
       Column() {
@@ -731,7 +770,7 @@ struct Index {
 
         Row() {
           Column() {
-            Text(target === 'from' ? '选择原单位' : '选择目标单位')
+            Text('选择原单位')
               .fontSize(18)
               .fontWeight(FontWeight.Bold)
               .fontColor('#182326')
@@ -751,11 +790,7 @@ struct Index {
             .borderRadius(8)
             .backgroundColor('#DFF2F0')
             .onClick((): void => {
-              if (target === 'from') {
-                this.showFromUnitPicker = false;
-              } else {
-                this.showToUnitPicker = false;
-              }
+              this.showFromUnitPicker = false;
             })
         }
         .width('100%')
@@ -772,8 +807,7 @@ struct Index {
               Text(unit.symbol)
                 .fontSize(13)
                 .fontColor('#667579')
-              if ((target === 'from' && index === this.fromIndex) ||
-                (target === 'to' && index === this.toIndex)) {
+              if (unit.name === this.fromUnitName) {
                 Text('✓')
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
@@ -786,13 +820,101 @@ struct Index {
             .height(42)
             .padding({ left: 12, right: 10 })
             .borderRadius(8)
-            .backgroundColor((target === 'from' && index === this.fromIndex) ||
-              (target === 'to' && index === this.toIndex) ? '#DFF2F0' : '#F8FAFA')
-            .border({ width: 1, color: (target === 'from' && index === this.fromIndex) ||
-              (target === 'to' && index === this.toIndex) ? '#147C78' : '#E4ECEB' })
+            .backgroundColor(unit.name === this.fromUnitName ? '#DFF2F0' : '#F8FAFA')
+            .border({ width: 1, color: unit.name === this.fromUnitName ? '#147C78' : '#E4ECEB' })
             .margin({ bottom: 6 })
             .onClick((): void => {
-              this.selectUnitIndex(target, index);
+              this.selectFromUnitName(unit.name);
+            })
+          }, (unit: UnitDefinition): string => unit.name)
+        }
+        .width('100%')
+      }
+      .width('100%')
+      .padding({ left: 18, right: 18, top: 14, bottom: 10 })
+      .borderRadius({ topLeft: 20, topRight: 20, bottomLeft: 0, bottomRight: 0 })
+      .backgroundColor(Color.White)
+      .shadow({
+        radius: 24,
+        color: 'rgba(0,0,0,0.22)',
+        offsetX: 0,
+        offsetY: -8
+      })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#00000099')
+  }
+
+  @Builder
+  ToUnitPickerDialog() {
+    Column() {
+      Blank()
+      Column() {
+        Row()
+          .width(38)
+          .height(4)
+          .borderRadius(2)
+          .backgroundColor('#C7D3D1')
+          .margin({ bottom: 14 })
+
+        Row() {
+          Column() {
+            Text('选择目标单位')
+              .fontSize(18)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#182326')
+            Text(this.getConverterConfig().title)
+              .fontSize(13)
+              .fontColor('#667579')
+              .margin({ top: 6 })
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+          Text('关闭')
+            .height(32)
+            .fontSize(14)
+            .fontColor('#147C78')
+            .textAlign(TextAlign.Center)
+            .padding({ left: 12, right: 12 })
+            .borderRadius(8)
+            .backgroundColor('#DFF2F0')
+            .onClick((): void => {
+              this.showToUnitPicker = false;
+            })
+        }
+        .width('100%')
+        .margin({ bottom: 14 })
+
+        Column() {
+          ForEach(this.getConverterConfig().units, (unit: UnitDefinition) => {
+            Row() {
+              Text(unit.name)
+                .fontSize(15)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#182326')
+                .layoutWeight(1)
+              Text(unit.symbol)
+                .fontSize(13)
+                .fontColor('#667579')
+              if (unit.name === this.toUnitName) {
+                Text('✓')
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#147C78')
+                  .width(24)
+                  .textAlign(TextAlign.End)
+              }
+            }
+            .width('100%')
+            .height(42)
+            .padding({ left: 12, right: 10 })
+            .borderRadius(8)
+            .backgroundColor(unit.name === this.toUnitName ? '#DFF2F0' : '#F8FAFA')
+            .border({ width: 1, color: unit.name === this.toUnitName ? '#147C78' : '#E4ECEB' })
+            .margin({ bottom: 6 })
+            .onClick((): void => {
+              this.selectToUnitName(unit.name);
             })
           }, (unit: UnitDefinition): string => unit.name)
         }
@@ -870,7 +992,7 @@ struct Index {
   }
 
   @Builder
-  UnitSelector(label: string, selectedIndex: number, target: 'from' | 'to') {
+  UnitSelector(label: string, target: 'from' | 'to') {
     Column() {
       Text(label)
         .fontSize(13)
@@ -878,7 +1000,7 @@ struct Index {
         .fontColor('#415155')
         .margin({ bottom: 7 })
       Row() {
-        Text(this.getConverterConfig().units[this.clampUnitIndex(selectedIndex, this.getConverterConfig().units)].name)
+        Text(target === 'from' ? this.fromUnitName : this.toUnitName)
           .height(44)
           .width('100%')
           .fontSize(15)
@@ -918,16 +1040,16 @@ struct Index {
         .margin({ bottom: 16 })
       this.InputField('数值', this.converterValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
         this.converterValue = value;
-        this.updateConversionResult(this.activeKey, value, this.fromIndex, this.toIndex);
+        this.updateConversionResult(this.activeKey, value, this.fromUnitName, this.toUnitName);
       })
       Row() {
         Column() {
-          this.UnitSelector('从', this.fromIndex, 'from')
+          this.UnitSelector('从', 'from')
         }
         .layoutWeight(1)
         .margin({ right: 6 })
         Column() {
-          this.UnitSelector('到', this.toIndex, 'to')
+          this.UnitSelector('到', 'to')
         }
         .layoutWeight(1)
         .margin({ left: 6 })
@@ -1181,10 +1303,10 @@ struct Index {
         this.CategoryEditorDialog()
       }
       if (this.showFromUnitPicker) {
-        this.UnitPickerDialog('from')
+        this.FromUnitPickerDialog()
       }
       if (this.showToUnitPicker) {
-        this.UnitPickerDialog('to')
+        this.ToUnitPickerDialog()
       }
     }
     .width('100%')
