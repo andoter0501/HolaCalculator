@@ -28,10 +28,6 @@ interface MetricItem {
   value: string;
 }
 
-interface UnitSelectOption {
-  value: string;
-}
-
 interface TaxBracket {
   threshold: number;
   rate: number;
@@ -113,6 +109,8 @@ struct Index {
   @State activeKey: CalculatorKey = 'length';
   @State categoryItems: CalculatorCategory[] = CATEGORIES.slice();
   @State showCategoryEditor: boolean = false;
+  @State showUnitPicker: boolean = false;
+  @State unitPickerTarget: 'from' | 'to' = 'from';
   @State converterValue: string = '128';
   @State fromIndex: number = 2;
   @State toIndex: number = 1;
@@ -228,34 +226,48 @@ struct Index {
     return `${this.formatNumber(this.getConversionValue(), config.precision)} ${toUnit.symbol}`;
   }
 
-  private getUnitSelectOptions(units: UnitDefinition[]): UnitSelectOption[] {
-    const options: UnitSelectOption[] = [];
-    for (let index: number = 0; index < units.length; index++) {
-      options.push({ value: units[index].name });
-    }
-    return options;
+  private setFromUnitIndex(index: number): void {
+    this.fromIndex = this.clampUnitIndex(index, this.getConverterConfig().units);
   }
 
-  private resetConverterIndexes(): void {
+  private setToUnitIndex(index: number): void {
+    this.toIndex = this.clampUnitIndex(index, this.getConverterConfig().units);
+  }
+
+  private openUnitPicker(target: 'from' | 'to'): void {
+    this.unitPickerTarget = target;
+    this.showUnitPicker = true;
+  }
+
+  private selectUnitIndex(index: number): void {
+    if (this.unitPickerTarget === 'from') {
+      this.setFromUnitIndex(index);
+    } else {
+      this.setToUnitIndex(index);
+    }
+    this.showUnitPicker = false;
+  }
+
+  private resetConverterIndexes(key: CalculatorKey): void {
     this.fromIndex = 0;
     this.toIndex = 1;
-    if (this.activeKey === 'length') {
+    if (key === 'length') {
       this.fromIndex = 2;
       this.toIndex = 1;
     }
-    if (this.activeKey === 'volume') {
+    if (key === 'volume') {
       this.fromIndex = 1;
       this.toIndex = 0;
     }
-    if (this.activeKey === 'time') {
+    if (key === 'time') {
       this.fromIndex = 2;
       this.toIndex = 3;
     }
-    if (this.activeKey === 'weight') {
+    if (key === 'weight') {
       this.fromIndex = 2;
       this.toIndex = 5;
     }
-    if (this.activeKey === 'area') {
+    if (key === 'area') {
       this.fromIndex = 2;
       this.toIndex = 3;
     }
@@ -264,7 +276,7 @@ struct Index {
   private selectCategory(key: CalculatorKey): void {
     this.activeKey = key;
     if (this.isConverterCategory(key)) {
-      this.resetConverterIndexes();
+      this.resetConverterIndexes(key);
     }
   }
 
@@ -626,6 +638,99 @@ struct Index {
   }
 
   @Builder
+  UnitPickerDialog() {
+    Column() {
+      Blank()
+      Column() {
+        Row()
+          .width(38)
+          .height(4)
+          .borderRadius(2)
+          .backgroundColor('#C7D3D1')
+          .margin({ bottom: 14 })
+
+        Row() {
+          Column() {
+            Text(this.unitPickerTarget === 'from' ? '选择原单位' : '选择目标单位')
+              .fontSize(18)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#182326')
+            Text(this.getConverterConfig().title)
+              .fontSize(13)
+              .fontColor('#667579')
+              .margin({ top: 6 })
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+          Text('关闭')
+            .height(32)
+            .fontSize(14)
+            .fontColor('#147C78')
+            .textAlign(TextAlign.Center)
+            .padding({ left: 12, right: 12 })
+            .borderRadius(8)
+            .backgroundColor('#DFF2F0')
+            .onClick((): void => {
+              this.showUnitPicker = false;
+            })
+        }
+        .width('100%')
+        .margin({ bottom: 14 })
+
+        Column() {
+          ForEach(this.getConverterConfig().units, (unit: UnitDefinition, index: number) => {
+            Row() {
+              Text(unit.name)
+                .fontSize(15)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#182326')
+                .layoutWeight(1)
+              Text(unit.symbol)
+                .fontSize(13)
+                .fontColor('#667579')
+              if ((this.unitPickerTarget === 'from' && index === this.fromIndex) ||
+                (this.unitPickerTarget === 'to' && index === this.toIndex)) {
+                Text('✓')
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#147C78')
+                  .width(24)
+                  .textAlign(TextAlign.End)
+              }
+            }
+            .width('100%')
+            .height(42)
+            .padding({ left: 12, right: 10 })
+            .borderRadius(8)
+            .backgroundColor((this.unitPickerTarget === 'from' && index === this.fromIndex) ||
+              (this.unitPickerTarget === 'to' && index === this.toIndex) ? '#DFF2F0' : '#F8FAFA')
+            .border({ width: 1, color: (this.unitPickerTarget === 'from' && index === this.fromIndex) ||
+              (this.unitPickerTarget === 'to' && index === this.toIndex) ? '#147C78' : '#E4ECEB' })
+            .margin({ bottom: 6 })
+            .onClick((): void => {
+              this.selectUnitIndex(index);
+            })
+          }, (unit: UnitDefinition): string => unit.name)
+        }
+        .width('100%')
+      }
+      .width('100%')
+      .padding({ left: 18, right: 18, top: 14, bottom: 10 })
+      .borderRadius({ topLeft: 20, topRight: 20, bottomLeft: 0, bottomRight: 0 })
+      .backgroundColor(Color.White)
+      .shadow({
+        radius: 24,
+        color: 'rgba(0,0,0,0.22)',
+        offsetX: 0,
+        offsetY: -8
+      })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#00000099')
+  }
+
+  @Builder
   MetricList(items: MetricItem[]) {
     Column() {
       ForEach(items, (item: MetricItem) => {
@@ -673,11 +778,49 @@ struct Index {
         .borderRadius(8)
         .border({ width: 1, color: '#DCE5E4' })
         .padding({ left: 12, right: 12 })
-        .type(InputType.Number)
+        .type(InputType.Normal)
         .onChange(onChange)
     }
     .width('100%')
     .margin({ bottom: 12 })
+  }
+
+  @Builder
+  UnitSelector(label: string, selectedIndex: number, target: 'from' | 'to') {
+    Column() {
+      Text(label)
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#415155')
+        .margin({ bottom: 7 })
+      Row() {
+        Text(this.getConverterConfig().units[this.clampUnitIndex(selectedIndex, this.getConverterConfig().units)].name)
+          .height(44)
+          .width('100%')
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.Center)
+          .backgroundColor('#FBFDFD')
+          .borderRadius(8)
+          .border({ width: 1, color: '#DCE5E4' })
+          .onClick((): void => {
+            this.openUnitPicker(target);
+          })
+        Text('▾')
+          .height(44)
+          .width(34)
+          .fontSize(16)
+          .fontColor('#147C78')
+          .textAlign(TextAlign.Center)
+          .margin({ left: -34 })
+          .onClick((): void => {
+            this.openUnitPicker(target);
+          })
+      }
+      .width('100%')
+    }
+    .width('100%')
   }
 
   @Builder
@@ -694,34 +837,12 @@ struct Index {
       })
       Row() {
         Column() {
-          Text('从')
-            .fontSize(13)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#415155')
-            .margin({ bottom: 7 })
-          Select(this.getUnitSelectOptions(this.getConverterConfig().units))
-            .selected(this.clampUnitIndex(this.fromIndex, this.getConverterConfig().units))
-            .value(this.getConverterConfig().units[this.clampUnitIndex(this.fromIndex, this.getConverterConfig().units)].name)
-            .height(44)
-            .onSelect((index: number): void => {
-              this.fromIndex = index;
-            })
+          this.UnitSelector('从', this.fromIndex, 'from')
         }
         .layoutWeight(1)
         .margin({ right: 6 })
         Column() {
-          Text('到')
-            .fontSize(13)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#415155')
-            .margin({ bottom: 7 })
-          Select(this.getUnitSelectOptions(this.getConverterConfig().units))
-            .selected(this.clampUnitIndex(this.toIndex, this.getConverterConfig().units))
-            .value(this.getConverterConfig().units[this.clampUnitIndex(this.toIndex, this.getConverterConfig().units)].name)
-            .height(44)
-            .onSelect((index: number): void => {
-              this.toIndex = index;
-            })
+          this.UnitSelector('到', this.toIndex, 'to')
         }
         .layoutWeight(1)
         .margin({ left: 6 })
@@ -973,6 +1094,9 @@ struct Index {
 
       if (this.showCategoryEditor) {
         this.CategoryEditorDialog()
+      }
+      if (this.showUnitPicker) {
+        this.UnitPickerDialog()
       }
     }
     .width('100%')
