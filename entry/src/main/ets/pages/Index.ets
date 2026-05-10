@@ -34,6 +34,19 @@ interface TaxBracket {
   deduction: number;
 }
 
+interface DeductionItem {
+  key: string;
+  title: string;
+  standard: string;
+  note: string;
+}
+
+interface MonthlyTaxRow {
+  month: string;
+  tax: string;
+  netIncome: string;
+}
+
 const CATEGORIES: CalculatorCategory[] = [
   { key: 'length', title: '长度', icon: 'm', desc: '米、厘米、英尺、英里' },
   { key: 'volume', title: '体积', icon: 'L', desc: '升、毫升、立方米' },
@@ -103,6 +116,51 @@ const TAX_BRACKETS: TaxBracket[] = [
   { threshold: 0, rate: 0.03, deduction: 0 }
 ];
 
+const DEDUCTION_ITEMS: DeductionItem[] = [
+  {
+    key: 'childrenEducation',
+    title: '1 子女教育',
+    standard: '2000元/孩子/月',
+    note: '3岁至博士后；父母各扣50%或一方扣100%。'
+  },
+  {
+    key: 'continuingEducation',
+    title: '2 继续教育',
+    standard: '400元/月或3600元/年',
+    note: '学历教育每月400元最长48个月；职业资格证书当年扣3600。'
+  },
+  {
+    key: 'seriousIllness',
+    title: '3 大病医疗',
+    standard: '最高80000元/年',
+    note: '医保报销后自负金额累计超15000元部分。'
+  },
+  {
+    key: 'mortgageInterest',
+    title: '4 住房贷款利息',
+    standard: '1000元/户/月',
+    note: '首套房贷利息年度内，最长240个月。'
+  },
+  {
+    key: 'housingRent',
+    title: '5 住房租金',
+    standard: '800/1100/1500元/月',
+    note: '主要工作城市无自有住房。'
+  },
+  {
+    key: 'elderSupport',
+    title: '6 赡养老人',
+    standard: '3000元/户/月',
+    note: '独生子女3000；非独生分摊1500-3000。'
+  },
+  {
+    key: 'childCare',
+    title: '7 3岁以下婴幼儿照护',
+    standard: '2000元/婴幼儿/月',
+    note: '出生当月至满3周岁。'
+  }
+];
+
 @Entry
 @Component
 struct Index {
@@ -120,9 +178,27 @@ struct Index {
   @State stopwatchRunning: boolean = false;
   @State lapItems: string[] = [];
   @State monthlyIncome: string = '20000';
-  @State monthlyInsurance: string = '3200';
-  @State monthlyDeduction: string = '2000';
-  @State prepaidTax: string = '5800';
+  @State monthlyBasicDeduction: string = '5000';
+  @State socialSecurityMode: 'rate' | 'fixed' = 'rate';
+  @State housingFundMode: 'rate' | 'fixed' = 'rate';
+  @State socialSecurityRate: string = '10.5';
+  @State housingFundRate: string = '7';
+  @State socialSecurityFixed: string = '2100';
+  @State housingFundFixed: string = '1400';
+  @State childEducationEnabled: boolean = false;
+  @State childEducationAmount: string = '2000';
+  @State continuingEducationEnabled: boolean = false;
+  @State continuingEducationAmount: string = '400';
+  @State seriousIllnessEnabled: boolean = false;
+  @State seriousIllnessAmount: string = '0';
+  @State mortgageInterestEnabled: boolean = false;
+  @State mortgageInterestAmount: string = '1000';
+  @State housingRentEnabled: boolean = false;
+  @State housingRentAmount: string = '1500';
+  @State elderSupportEnabled: boolean = false;
+  @State elderSupportAmount: string = '3000';
+  @State childCareEnabled: boolean = false;
+  @State childCareAmount: string = '2000';
   @State loanAmount: string = '100';
   @State loanYears: string = '30';
   @State annualRate: string = '4.2';
@@ -493,14 +569,65 @@ struct Index {
 
   private getTaxableIncome(): number {
     const annualIncome: number = this.parseNumber(this.monthlyIncome) * 12;
-    const annualInsurance: number = this.parseNumber(this.monthlyInsurance) * 12;
-    const annualDeduction: number = this.parseNumber(this.monthlyDeduction) * 12;
-    const taxableIncome: number = annualIncome - 60000 - annualInsurance - annualDeduction;
+    const taxableIncome: number = annualIncome - this.parseNumber(this.monthlyBasicDeduction) * 12 -
+      this.getAnnualSocialSecurityDeduction() - this.getAnnualHousingFundDeduction() -
+      this.getAnnualSpecialDeduction();
     return Math.max(0, taxableIncome);
   }
 
-  private getTaxDue(): number {
-    const taxableIncome: number = this.getTaxableIncome();
+  private getMonthlySocialSecurityDeduction(): number {
+    if (this.socialSecurityMode === 'fixed') {
+      return this.parseNumber(this.socialSecurityFixed);
+    }
+    return this.parseNumber(this.monthlyIncome) * this.parseNumber(this.socialSecurityRate) / 100;
+  }
+
+  private getMonthlyHousingFundDeduction(): number {
+    if (this.housingFundMode === 'fixed') {
+      return this.parseNumber(this.housingFundFixed);
+    }
+    return this.parseNumber(this.monthlyIncome) * this.parseNumber(this.housingFundRate) / 100;
+  }
+
+  private getAnnualSocialSecurityDeduction(): number {
+    return this.getMonthlySocialSecurityDeduction() * 12;
+  }
+
+  private getAnnualHousingFundDeduction(): number {
+    return this.getMonthlyHousingFundDeduction() * 12;
+  }
+
+  private getMonthlySpecialDeduction(): number {
+    let total: number = 0;
+    if (this.childEducationEnabled) {
+      total += this.parseNumber(this.childEducationAmount);
+    }
+    if (this.continuingEducationEnabled) {
+      total += this.parseNumber(this.continuingEducationAmount);
+    }
+    if (this.seriousIllnessEnabled) {
+      total += this.parseNumber(this.seriousIllnessAmount) / 12;
+    }
+    if (this.mortgageInterestEnabled) {
+      total += this.parseNumber(this.mortgageInterestAmount);
+    }
+    if (this.housingRentEnabled) {
+      total += this.parseNumber(this.housingRentAmount);
+    }
+    if (this.elderSupportEnabled) {
+      total += this.parseNumber(this.elderSupportAmount);
+    }
+    if (this.childCareEnabled) {
+      total += this.parseNumber(this.childCareAmount);
+    }
+    return total;
+  }
+
+  private getAnnualSpecialDeduction(): number {
+    return this.getMonthlySpecialDeduction() * 12;
+  }
+
+  private getTaxByTaxableIncome(taxableIncome: number): number {
     for (let index: number = 0; index < TAX_BRACKETS.length; index++) {
       const bracket: TaxBracket = TAX_BRACKETS[index];
       if (taxableIncome > bracket.threshold) {
@@ -510,15 +637,42 @@ struct Index {
     return 0;
   }
 
+  private getTaxDue(): number {
+    return this.getTaxByTaxableIncome(this.getTaxableIncome());
+  }
+
+  private getMonthlyTaxRows(): MonthlyTaxRow[] {
+    const rows: MonthlyTaxRow[] = [];
+    const monthlyIncome: number = this.parseNumber(this.monthlyIncome);
+    const monthlyTaxableIncome: number = Math.max(0, monthlyIncome - this.parseNumber(this.monthlyBasicDeduction) -
+      this.getMonthlySocialSecurityDeduction() - this.getMonthlyHousingFundDeduction() -
+      this.getMonthlySpecialDeduction());
+    const monthlyDeductions: number = this.getMonthlySocialSecurityDeduction() + this.getMonthlyHousingFundDeduction();
+    let previousCumulativeTax: number = 0;
+    for (let month: number = 1; month <= 12; month++) {
+      const cumulativeTaxableIncome: number = monthlyTaxableIncome * month;
+      const cumulativeTax: number = this.getTaxByTaxableIncome(cumulativeTaxableIncome);
+      const monthlyTax: number = Math.max(0, cumulativeTax - previousCumulativeTax);
+      previousCumulativeTax = cumulativeTax;
+      rows.push({
+        month: `${month}月`,
+        tax: this.formatMoney(monthlyTax),
+        netIncome: this.formatMoney(monthlyIncome - monthlyDeductions - monthlyTax)
+      });
+    }
+    return rows;
+  }
+
   private getTaxMetrics(): MetricItem[] {
     const annualIncome: number = this.parseNumber(this.monthlyIncome) * 12;
     const taxDue: number = this.getTaxDue();
-    const prepaid: number = this.parseNumber(this.prepaidTax);
-    const balance: number = taxDue - prepaid;
     return [
       { label: '应纳税所得额', value: this.formatMoney(this.getTaxableIncome()) },
-      { label: '估算税后收入', value: this.formatMoney(annualIncome - taxDue) },
-      { label: balance >= 0 ? '预计补税' : '预计退税', value: this.formatMoney(Math.abs(balance)) }
+      { label: '年度起征扣除', value: this.formatMoney(this.parseNumber(this.monthlyBasicDeduction) * 12) },
+      { label: '社保年度扣除', value: this.formatMoney(this.getAnnualSocialSecurityDeduction()) },
+      { label: '公积金年度扣除', value: this.formatMoney(this.getAnnualHousingFundDeduction()) },
+      { label: '专项附加扣除', value: this.formatMoney(this.getAnnualSpecialDeduction()) },
+      { label: '估算税后收入', value: this.formatMoney(annualIncome - taxDue) }
     ];
   }
 
@@ -951,6 +1105,70 @@ struct Index {
   }
 
   @Builder
+  MonthlyTaxTable() {
+    Column() {
+      Text('月度扣税明细')
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#182326')
+        .margin({ bottom: 10 })
+      Row() {
+        Text('月份')
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#415155')
+        Text('扣税')
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#415155')
+          .textAlign(TextAlign.End)
+        Text('到手工资')
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#415155')
+          .textAlign(TextAlign.End)
+      }
+      .width('100%')
+      .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+      .backgroundColor('#DFF2F0')
+      .borderRadius({ topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 })
+
+      Column() {
+        ForEach(this.getMonthlyTaxRows(), (row: MonthlyTaxRow) => {
+          Row() {
+            Text(row.month)
+              .layoutWeight(1)
+              .fontSize(13)
+              .fontColor('#667579')
+            Text(row.tax)
+              .layoutWeight(1)
+              .fontSize(13)
+              .fontColor('#182326')
+              .textAlign(TextAlign.End)
+            Text(row.netIncome)
+              .layoutWeight(1)
+              .fontSize(13)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#182326')
+              .textAlign(TextAlign.End)
+          }
+          .width('100%')
+          .padding({ left: 12, right: 12, top: 11, bottom: 11 })
+          .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+        }, (row: MonthlyTaxRow): string => row.month)
+      }
+      .width('100%')
+      .border({ width: { left: 1, right: 1, bottom: 1 }, color: '#E4ECEB' })
+      .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 8, bottomRight: 8 })
+    }
+    .width('100%')
+    .margin({ top: 16, bottom: 12 })
+  }
+
+  @Builder
   SectionTitle(title: string) {
     Text(title)
       .fontSize(16)
@@ -979,6 +1197,224 @@ struct Index {
     }
     .width('100%')
     .margin({ bottom: 12 })
+  }
+
+  @Builder
+  SocialSecurityModeToggle() {
+    Column() {
+      Text('社保扣除方式')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#415155')
+        .margin({ bottom: 7 })
+      Row() {
+        Button('按比例')
+          .height(36)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.socialSecurityMode === 'rate' ? Color.White : '#147C78')
+          .backgroundColor(this.socialSecurityMode === 'rate' ? '#102729' : '#DFF2F0')
+          .borderRadius(8)
+          .margin({ right: 4 })
+          .onClick((): void => {
+            this.socialSecurityMode = 'rate';
+          })
+        Button('固定额度')
+          .height(36)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.socialSecurityMode === 'fixed' ? Color.White : '#147C78')
+          .backgroundColor(this.socialSecurityMode === 'fixed' ? '#102729' : '#DFF2F0')
+          .borderRadius(8)
+          .margin({ left: 4 })
+          .onClick((): void => {
+            this.socialSecurityMode = 'fixed';
+          })
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
+  HousingFundModeToggle() {
+    Column() {
+      Text('公积金扣除方式')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#415155')
+        .margin({ bottom: 7 })
+      Row() {
+        Button('按比例')
+          .height(36)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.housingFundMode === 'rate' ? Color.White : '#147C78')
+          .backgroundColor(this.housingFundMode === 'rate' ? '#102729' : '#DFF2F0')
+          .borderRadius(8)
+          .margin({ right: 4 })
+          .onClick((): void => {
+            this.housingFundMode = 'rate';
+          })
+        Button('固定额度')
+          .height(36)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.housingFundMode === 'fixed' ? Color.White : '#147C78')
+          .backgroundColor(this.housingFundMode === 'fixed' ? '#102729' : '#DFF2F0')
+          .borderRadius(8)
+          .margin({ left: 4 })
+          .onClick((): void => {
+            this.housingFundMode = 'fixed';
+          })
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
+  }
+
+  private isDeductionEnabled(key: string): boolean {
+    if (key === 'childrenEducation') {
+      return this.childEducationEnabled;
+    }
+    if (key === 'continuingEducation') {
+      return this.continuingEducationEnabled;
+    }
+    if (key === 'seriousIllness') {
+      return this.seriousIllnessEnabled;
+    }
+    if (key === 'mortgageInterest') {
+      return this.mortgageInterestEnabled;
+    }
+    if (key === 'housingRent') {
+      return this.housingRentEnabled;
+    }
+    if (key === 'elderSupport') {
+      return this.elderSupportEnabled;
+    }
+    if (key === 'childCare') {
+      return this.childCareEnabled;
+    }
+    return false;
+  }
+
+  private getDeductionAmount(key: string): string {
+    if (key === 'childrenEducation') {
+      return this.childEducationAmount;
+    }
+    if (key === 'continuingEducation') {
+      return this.continuingEducationAmount;
+    }
+    if (key === 'seriousIllness') {
+      return this.seriousIllnessAmount;
+    }
+    if (key === 'mortgageInterest') {
+      return this.mortgageInterestAmount;
+    }
+    if (key === 'housingRent') {
+      return this.housingRentAmount;
+    }
+    if (key === 'elderSupport') {
+      return this.elderSupportAmount;
+    }
+    if (key === 'childCare') {
+      return this.childCareAmount;
+    }
+    return '0';
+  }
+
+  private setDeductionEnabled(key: string, enabled: boolean): void {
+    if (key === 'childrenEducation') {
+      this.childEducationEnabled = enabled;
+    } else if (key === 'continuingEducation') {
+      this.continuingEducationEnabled = enabled;
+    } else if (key === 'seriousIllness') {
+      this.seriousIllnessEnabled = enabled;
+    } else if (key === 'mortgageInterest') {
+      this.mortgageInterestEnabled = enabled;
+    } else if (key === 'housingRent') {
+      this.housingRentEnabled = enabled;
+    } else if (key === 'elderSupport') {
+      this.elderSupportEnabled = enabled;
+    } else if (key === 'childCare') {
+      this.childCareEnabled = enabled;
+    }
+  }
+
+  private setDeductionAmount(key: string, value: string): void {
+    if (key === 'childrenEducation') {
+      this.childEducationAmount = value;
+    } else if (key === 'continuingEducation') {
+      this.continuingEducationAmount = value;
+    } else if (key === 'seriousIllness') {
+      this.seriousIllnessAmount = value;
+    } else if (key === 'mortgageInterest') {
+      this.mortgageInterestAmount = value;
+    } else if (key === 'housingRent') {
+      this.housingRentAmount = value;
+    } else if (key === 'elderSupport') {
+      this.elderSupportAmount = value;
+    } else if (key === 'childCare') {
+      this.childCareAmount = value;
+    }
+  }
+
+  private getDeductionAmountLabel(key: string): string {
+    if (key === 'seriousIllness') {
+      return '扣除金额（元/年）';
+    }
+    return '扣除金额（元/月）';
+  }
+
+  @Builder
+  DeductionItemCard(item: DeductionItem) {
+    Column() {
+      Row() {
+        Text(this.isDeductionEnabled(item.key) ? '✓' : '')
+          .width(28)
+          .height(28)
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Color.White)
+          .textAlign(TextAlign.Center)
+          .borderRadius(8)
+          .backgroundColor(this.isDeductionEnabled(item.key) ? '#147C78' : '#DCE5E4')
+        Column() {
+          Text(item.title)
+            .fontSize(14)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+          Text(item.standard)
+            .fontSize(12)
+            .fontColor('#147C78')
+            .margin({ top: 3 })
+        }
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
+        .margin({ left: 10 })
+      }
+      .width('100%')
+      .onClick((): void => {
+        this.setDeductionEnabled(item.key, !this.isDeductionEnabled(item.key));
+      })
+
+      Text(item.note)
+        .fontSize(12)
+        .fontColor('#667579')
+        .lineHeight(17)
+        .margin({ top: 8, bottom: 8 })
+      this.InputField(this.getDeductionAmountLabel(item.key), this.getDeductionAmount(item.key), '请输入扣除额', (value: string): void => {
+        this.setDeductionAmount(item.key, value);
+      })
+    }
+    .width('100%')
+    .padding(12)
+    .borderRadius(8)
+    .backgroundColor(this.isDeductionEnabled(item.key) ? '#F1FBFA' : '#FFFFFF')
+    .border({ width: 1, color: this.isDeductionEnabled(item.key) ? '#147C78' : '#E4ECEB' })
+    .margin({ bottom: 10 })
   }
 
   @Builder
@@ -1147,7 +1583,7 @@ struct Index {
   TaxPanel() {
     Column() {
       this.SectionTitle('个税估算')
-      Text('按中国大陆综合所得年度口径估算，基础减除费用按 60000 元/年。')
+      Text('按中国大陆综合所得年度口径估算，起征点、社保、公积金和专项附加扣除均可调整。')
         .fontSize(14)
         .fontColor('#667579')
         .lineHeight(21)
@@ -1155,17 +1591,44 @@ struct Index {
       this.InputField('月收入（元）', this.monthlyIncome, '请输入月收入', (value: string): void => {
         this.monthlyIncome = value;
       })
-      this.InputField('三险一金（元/月）', this.monthlyInsurance, '请输入三险一金', (value: string): void => {
-        this.monthlyInsurance = value;
+      this.InputField('起征点（元/月）', this.monthlyBasicDeduction, '默认 5000', (value: string): void => {
+        this.monthlyBasicDeduction = value;
       })
-      this.InputField('专项附加扣除（元/月）', this.monthlyDeduction, '请输入扣除', (value: string): void => {
-        this.monthlyDeduction = value;
-      })
-      this.InputField('已预缴税额（元）', this.prepaidTax, '请输入已预缴税额', (value: string): void => {
-        this.prepaidTax = value;
-      })
+
+      this.SocialSecurityModeToggle()
+      if (this.socialSecurityMode === 'rate') {
+        this.InputField('社保比例（%）', this.socialSecurityRate, '请输入社保比例', (value: string): void => {
+          this.socialSecurityRate = value;
+        })
+      } else {
+        this.InputField('社保固定额（元/月）', this.socialSecurityFixed, '请输入社保固定额', (value: string): void => {
+          this.socialSecurityFixed = value;
+        })
+      }
+
+      this.HousingFundModeToggle()
+      if (this.housingFundMode === 'rate') {
+        this.InputField('公积金比例（%）', this.housingFundRate, '请输入公积金比例', (value: string): void => {
+          this.housingFundRate = value;
+        })
+      } else {
+        this.InputField('公积金固定额（元/月）', this.housingFundFixed, '请输入公积金固定额', (value: string): void => {
+          this.housingFundFixed = value;
+        })
+      }
+
+      Text('专项附加扣除')
+        .fontSize(15)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#182326')
+        .margin({ top: 8, bottom: 10 })
+      ForEach(DEDUCTION_ITEMS, (item: DeductionItem) => {
+        this.DeductionItemCard(item)
+      }, (item: DeductionItem): string => item.key)
+
       this.ResultCard('年度应纳税额', this.formatMoney(this.getTaxDue()), '估算结果仅供参考，未覆盖城市社保、公积金差异。')
       this.MetricList(this.getTaxMetrics())
+      this.MonthlyTaxTable()
     }
     .width('100%')
   }
