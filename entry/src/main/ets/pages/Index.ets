@@ -116,7 +116,6 @@ struct Index {
   @State toIndex: number = 1;
   @State fromUnitName: string = '米';
   @State toUnitName: string = '厘米';
-  @State conversionResultText: string = '12800 cm';
   @State stopwatchMs: number = 0;
   @State stopwatchRunning: boolean = false;
   @State lapItems: string[] = [];
@@ -132,10 +131,6 @@ struct Index {
 
   aboutToDisappear(): void {
     this.stopTimer();
-  }
-
-  aboutToAppear(): void {
-    this.updateConversionResult('length', this.converterValue, this.fromUnitName, this.toUnitName);
   }
 
   private getConverterConfig(): ConverterConfig {
@@ -307,8 +302,8 @@ struct Index {
     return `${this.formatNumber(result, config.precision)} ${toUnit.symbol}`;
   }
 
-  private updateConversionResult(key: CalculatorKey, inputValue: string, fromUnitName: string, toUnitName: string): void {
-    this.conversionResultText = this.getConversionTextByState(key, inputValue, fromUnitName, toUnitName);
+  private getCurrentConversionText(): string {
+    return this.getConversionTextByState(this.activeKey, this.converterValue, this.fromUnitName, this.toUnitName);
   }
 
   private setFromUnitName(unitName: string): void {
@@ -317,7 +312,6 @@ struct Index {
     const nextUnitName: string = config.units[nextIndex].name;
     this.fromUnitName = nextUnitName;
     this.fromIndex = nextIndex;
-    this.updateConversionResult(this.activeKey, this.converterValue, nextUnitName, this.toUnitName);
   }
 
   private setToUnitName(unitName: string): void {
@@ -326,21 +320,18 @@ struct Index {
     const nextUnitName: string = config.units[nextIndex].name;
     this.toUnitName = nextUnitName;
     this.toIndex = nextIndex;
-    this.updateConversionResult(this.activeKey, this.converterValue, this.fromUnitName, nextUnitName);
   }
 
   private setFromUnitIndex(index: number): void {
     const nextIndex: number = this.clampUnitIndex(index, this.getConverterConfig().units);
     this.fromIndex = nextIndex;
     this.fromUnitName = this.getConverterConfig().units[nextIndex].name;
-    this.updateConversionResult(this.activeKey, this.converterValue, this.fromUnitName, this.toUnitName);
   }
 
   private setToUnitIndex(index: number): void {
     const nextIndex: number = this.clampUnitIndex(index, this.getConverterConfig().units);
     this.toIndex = nextIndex;
     this.toUnitName = this.getConverterConfig().units[nextIndex].name;
-    this.updateConversionResult(this.activeKey, this.converterValue, this.fromUnitName, this.toUnitName);
   }
 
   private openUnitPicker(target: 'from' | 'to'): void {
@@ -389,7 +380,6 @@ struct Index {
     const config: ConverterConfig = this.getConverterConfigByKey(key);
     this.fromUnitName = config.units[this.clampUnitIndex(nextFromIndex, config.units)].name;
     this.toUnitName = config.units[this.clampUnitIndex(nextToIndex, config.units)].name;
-    this.updateConversionResult(key, this.converterValue, this.fromUnitName, this.toUnitName);
   }
 
   private selectCategory(key: CalculatorKey): void {
@@ -1030,6 +1020,31 @@ struct Index {
   }
 
   @Builder
+  ConverterResultCard() {
+    Column() {
+      Text('换算结果')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('rgba(255,255,255,0.72)')
+      Text(this.getCurrentConversionText())
+        .fontSize(34)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(Color.White)
+        .width('100%')
+        .margin({ top: 10, bottom: 8 })
+      Text(`${this.fromUnitName} → ${this.toUnitName}`)
+        .fontSize(13)
+        .fontColor('rgba(255,255,255,0.68)')
+        .lineHeight(19)
+    }
+    .width('100%')
+    .padding(18)
+    .borderRadius(8)
+    .backgroundColor('#102729')
+    .margin({ top: 18 })
+  }
+
+  @Builder
   ConverterPanel() {
     Column() {
       this.SectionTitle(this.getConverterConfig().title)
@@ -1040,7 +1055,6 @@ struct Index {
         .margin({ bottom: 16 })
       this.InputField('数值', this.converterValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
         this.converterValue = value;
-        this.updateConversionResult(this.activeKey, value, this.fromUnitName, this.toUnitName);
       })
       Row() {
         Column() {
@@ -1057,7 +1071,7 @@ struct Index {
       .width('100%')
       .margin({ top: 14 })
 
-      this.ResultCard('换算结果', this.conversionResultText, this.getConverterConfig().estimateNote)
+      this.ConverterResultCard()
     }
     .width('100%')
   }
