@@ -712,6 +712,23 @@ struct Index {
     return principal / months + principal / months * monthlyRate;
   }
 
+  private getMortgageMainPayment(): number {
+    if (this.repaymentType === 'interest') {
+      return this.getEqualInterestPayment();
+    }
+    return this.getEqualPrincipalFirstPayment();
+  }
+
+  private getMortgageTotalPayment(): number {
+    const principal: number = this.getLoanPrincipal();
+    const months: number = this.getLoanMonths();
+    const monthlyRate: number = this.getMonthlyRate();
+    if (this.repaymentType === 'interest') {
+      return this.getEqualInterestPayment() * months;
+    }
+    return principal + principal * monthlyRate * (months + 1) / 2;
+  }
+
   private getMortgageMetrics(): MetricItem[] {
     const principal: number = this.getLoanPrincipal();
     const months: number = this.getLoanMonths();
@@ -1190,6 +1207,87 @@ struct Index {
     .borderRadius(8)
     .backgroundColor('#102729')
     .margin({ top: 18 })
+  }
+
+  @Builder
+  MortgageResultCard() {
+    Column() {
+      Text(this.repaymentType === 'interest' ? '预计月供' : '首月月供')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('rgba(255,255,255,0.72)')
+      Text(this.formatMoney(this.getMortgageMainPayment()))
+        .fontSize(34)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(Color.White)
+        .width('100%')
+        .margin({ top: 10, bottom: 8 })
+      Text('结果按输入利率本地计算，仅供参考。')
+        .fontSize(13)
+        .fontColor('rgba(255,255,255,0.68)')
+        .lineHeight(19)
+    }
+    .width('100%')
+    .padding(18)
+    .borderRadius(8)
+    .backgroundColor('#102729')
+    .margin({ top: 18 })
+  }
+
+  @Builder
+  MortgageMetricList() {
+    Column() {
+      Row() {
+        Text(this.repaymentType === 'interest' ? '总利息' : '末月月供')
+          .fontSize(14)
+          .fontColor('#667579')
+        Text(this.repaymentType === 'interest' ?
+          this.formatMoney(this.getMortgageTotalPayment() - this.getLoanPrincipal()) :
+          this.formatMoney(this.getEqualPrincipalLastPayment()))
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.End)
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .padding({ top: 12, bottom: 12 })
+      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+
+      Row() {
+        Text(this.repaymentType === 'interest' ? '总还款' : '总利息')
+          .fontSize(14)
+          .fontColor('#667579')
+        Text(this.repaymentType === 'interest' ?
+          this.formatMoney(this.getMortgageTotalPayment()) :
+          this.formatMoney(this.getMortgageTotalPayment() - this.getLoanPrincipal()))
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.End)
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .padding({ top: 12, bottom: 12 })
+      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+
+      Row() {
+        Text(this.repaymentType === 'interest' ? '还款期数' : '总还款')
+          .fontSize(14)
+          .fontColor('#667579')
+        Text(this.repaymentType === 'interest' ? `${this.getLoanMonths()} 期` : this.formatMoney(this.getMortgageTotalPayment()))
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.End)
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .padding({ top: 12, bottom: 12 })
+      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
   }
 
   @Builder
@@ -1689,10 +1787,8 @@ struct Index {
       }
       .width('100%')
       .margin({ top: 2 })
-      this.ResultCard(this.repaymentType === 'interest' ? '预计月供' : '首月月供',
-        this.formatMoney(this.repaymentType === 'interest' ? this.getEqualInterestPayment() : this.getEqualPrincipalFirstPayment()),
-        '结果按输入利率本地计算，仅供参考。')
-      this.MetricList(this.getMortgageMetrics())
+      this.MortgageResultCard()
+      this.MortgageMetricList()
     }
     .width('100%')
   }
