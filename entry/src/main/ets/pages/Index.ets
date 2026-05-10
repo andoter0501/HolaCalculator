@@ -109,11 +109,12 @@ struct Index {
   @State activeKey: CalculatorKey = 'length';
   @State categoryItems: CalculatorCategory[] = CATEGORIES.slice();
   @State showCategoryEditor: boolean = false;
-  @State showUnitPicker: boolean = false;
-  @State unitPickerTarget: 'from' | 'to' = 'from';
+  @State showFromUnitPicker: boolean = false;
+  @State showToUnitPicker: boolean = false;
   @State converterValue: string = '128';
   @State fromIndex: number = 2;
   @State toIndex: number = 1;
+  @State conversionResultText: string = '12800 cm';
   @State stopwatchMs: number = 0;
   @State stopwatchRunning: boolean = false;
   @State lapItems: string[] = [];
@@ -129,6 +130,10 @@ struct Index {
 
   aboutToDisappear(): void {
     this.stopTimer();
+  }
+
+  aboutToAppear(): void {
+    this.updateConversionResult('length', this.converterValue, this.fromIndex, this.toIndex);
   }
 
   private getConverterConfig(): ConverterConfig {
@@ -163,6 +168,57 @@ struct Index {
       };
     }
     if (this.activeKey === 'area') {
+      return {
+        title: '面积换算',
+        desc: '平方米、亩、公顷、平方千米等面积单位换算。',
+        valuePlaceholder: '输入面积',
+        units: AREA_UNITS,
+        precision: 4,
+        estimateNote: ''
+      };
+    }
+    return {
+      title: '长度换算',
+      desc: '毫米、厘米、米、千米和英制长度单位快速换算。',
+      valuePlaceholder: '输入长度',
+      units: LENGTH_UNITS,
+      precision: 4,
+      estimateNote: ''
+    };
+  }
+
+  private getConverterConfigByKey(key: CalculatorKey): ConverterConfig {
+    if (key === 'volume') {
+      return {
+        title: '体积换算',
+        desc: '升、毫升、立方厘米、立方米和加仑快速换算。',
+        valuePlaceholder: '输入体积',
+        units: VOLUME_UNITS,
+        precision: 4,
+        estimateNote: ''
+      };
+    }
+    if (key === 'time') {
+      return {
+        title: '时间换算',
+        desc: '秒、分钟、小时、天、周、月、年之间换算。',
+        valuePlaceholder: '输入时间',
+        units: TIME_UNITS,
+        precision: 4,
+        estimateNote: '月和年按固定平均值估算。'
+      };
+    }
+    if (key === 'weight') {
+      return {
+        title: '重量换算',
+        desc: '毫克、克、千克、吨、盎司和磅之间换算。',
+        valuePlaceholder: '输入重量',
+        units: WEIGHT_UNITS,
+        precision: 4,
+        estimateNote: ''
+      };
+    }
+    if (key === 'area') {
       return {
         title: '面积换算',
         desc: '平方米、亩、公顷、平方千米等面积单位换算。',
@@ -226,51 +282,75 @@ struct Index {
     return `${this.formatNumber(this.getConversionValue(), config.precision)} ${toUnit.symbol}`;
   }
 
+  private getConversionTextByState(key: CalculatorKey, inputValue: string, fromIndex: number, toIndex: number): string {
+    const config: ConverterConfig = this.getConverterConfigByKey(key);
+    const fromUnit: UnitDefinition = config.units[this.clampUnitIndex(fromIndex, config.units)];
+    const toUnit: UnitDefinition = config.units[this.clampUnitIndex(toIndex, config.units)];
+    const input: number = this.parseNumber(inputValue);
+    const result: number = input * fromUnit.factor / toUnit.factor;
+    return `${this.formatNumber(result, config.precision)} ${toUnit.symbol}`;
+  }
+
+  private updateConversionResult(key: CalculatorKey, inputValue: string, fromIndex: number, toIndex: number): void {
+    this.conversionResultText = this.getConversionTextByState(key, inputValue, fromIndex, toIndex);
+  }
+
   private setFromUnitIndex(index: number): void {
-    this.fromIndex = this.clampUnitIndex(index, this.getConverterConfig().units);
+    const nextIndex: number = this.clampUnitIndex(index, this.getConverterConfig().units);
+    this.fromIndex = nextIndex;
+    this.updateConversionResult(this.activeKey, this.converterValue, nextIndex, this.toIndex);
   }
 
   private setToUnitIndex(index: number): void {
-    this.toIndex = this.clampUnitIndex(index, this.getConverterConfig().units);
+    const nextIndex: number = this.clampUnitIndex(index, this.getConverterConfig().units);
+    this.toIndex = nextIndex;
+    this.updateConversionResult(this.activeKey, this.converterValue, this.fromIndex, nextIndex);
   }
 
   private openUnitPicker(target: 'from' | 'to'): void {
-    this.unitPickerTarget = target;
-    this.showUnitPicker = true;
+    if (target === 'from') {
+      this.showFromUnitPicker = true;
+    } else {
+      this.showToUnitPicker = true;
+    }
   }
 
-  private selectUnitIndex(index: number): void {
-    if (this.unitPickerTarget === 'from') {
+  private selectUnitIndex(target: 'from' | 'to', index: number): void {
+    if (target === 'from') {
       this.setFromUnitIndex(index);
+      this.showFromUnitPicker = false;
     } else {
       this.setToUnitIndex(index);
+      this.showToUnitPicker = false;
     }
-    this.showUnitPicker = false;
   }
 
   private resetConverterIndexes(key: CalculatorKey): void {
-    this.fromIndex = 0;
-    this.toIndex = 1;
+    let nextFromIndex: number = 0;
+    let nextToIndex: number = 1;
     if (key === 'length') {
-      this.fromIndex = 2;
-      this.toIndex = 1;
+      nextFromIndex = 2;
+      nextToIndex = 1;
     }
     if (key === 'volume') {
-      this.fromIndex = 1;
-      this.toIndex = 0;
+      nextFromIndex = 1;
+      nextToIndex = 0;
     }
     if (key === 'time') {
-      this.fromIndex = 2;
-      this.toIndex = 3;
+      nextFromIndex = 2;
+      nextToIndex = 3;
     }
     if (key === 'weight') {
-      this.fromIndex = 2;
-      this.toIndex = 5;
+      nextFromIndex = 2;
+      nextToIndex = 5;
     }
     if (key === 'area') {
-      this.fromIndex = 2;
-      this.toIndex = 3;
+      nextFromIndex = 2;
+      nextToIndex = 3;
     }
+    this.fromIndex = nextFromIndex;
+    this.toIndex = nextToIndex;
+    this.updateConversionResult(key, this.converterValue, nextFromIndex, nextToIndex);
   }
 
   private selectCategory(key: CalculatorKey): void {
@@ -638,7 +718,7 @@ struct Index {
   }
 
   @Builder
-  UnitPickerDialog() {
+  UnitPickerDialog(target: 'from' | 'to') {
     Column() {
       Blank()
       Column() {
@@ -651,7 +731,7 @@ struct Index {
 
         Row() {
           Column() {
-            Text(this.unitPickerTarget === 'from' ? '选择原单位' : '选择目标单位')
+            Text(target === 'from' ? '选择原单位' : '选择目标单位')
               .fontSize(18)
               .fontWeight(FontWeight.Bold)
               .fontColor('#182326')
@@ -671,7 +751,11 @@ struct Index {
             .borderRadius(8)
             .backgroundColor('#DFF2F0')
             .onClick((): void => {
-              this.showUnitPicker = false;
+              if (target === 'from') {
+                this.showFromUnitPicker = false;
+              } else {
+                this.showToUnitPicker = false;
+              }
             })
         }
         .width('100%')
@@ -688,8 +772,8 @@ struct Index {
               Text(unit.symbol)
                 .fontSize(13)
                 .fontColor('#667579')
-              if ((this.unitPickerTarget === 'from' && index === this.fromIndex) ||
-                (this.unitPickerTarget === 'to' && index === this.toIndex)) {
+              if ((target === 'from' && index === this.fromIndex) ||
+                (target === 'to' && index === this.toIndex)) {
                 Text('✓')
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
@@ -702,13 +786,13 @@ struct Index {
             .height(42)
             .padding({ left: 12, right: 10 })
             .borderRadius(8)
-            .backgroundColor((this.unitPickerTarget === 'from' && index === this.fromIndex) ||
-              (this.unitPickerTarget === 'to' && index === this.toIndex) ? '#DFF2F0' : '#F8FAFA')
-            .border({ width: 1, color: (this.unitPickerTarget === 'from' && index === this.fromIndex) ||
-              (this.unitPickerTarget === 'to' && index === this.toIndex) ? '#147C78' : '#E4ECEB' })
+            .backgroundColor((target === 'from' && index === this.fromIndex) ||
+              (target === 'to' && index === this.toIndex) ? '#DFF2F0' : '#F8FAFA')
+            .border({ width: 1, color: (target === 'from' && index === this.fromIndex) ||
+              (target === 'to' && index === this.toIndex) ? '#147C78' : '#E4ECEB' })
             .margin({ bottom: 6 })
             .onClick((): void => {
-              this.selectUnitIndex(index);
+              this.selectUnitIndex(target, index);
             })
           }, (unit: UnitDefinition): string => unit.name)
         }
@@ -834,6 +918,7 @@ struct Index {
         .margin({ bottom: 16 })
       this.InputField('数值', this.converterValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
         this.converterValue = value;
+        this.updateConversionResult(this.activeKey, value, this.fromIndex, this.toIndex);
       })
       Row() {
         Column() {
@@ -850,7 +935,7 @@ struct Index {
       .width('100%')
       .margin({ top: 14 })
 
-      this.ResultCard('换算结果', this.getConversionText(), this.getConverterConfig().estimateNote)
+      this.ResultCard('换算结果', this.conversionResultText, this.getConverterConfig().estimateNote)
     }
     .width('100%')
   }
@@ -1095,8 +1180,11 @@ struct Index {
       if (this.showCategoryEditor) {
         this.CategoryEditorDialog()
       }
-      if (this.showUnitPicker) {
-        this.UnitPickerDialog()
+      if (this.showFromUnitPicker) {
+        this.UnitPickerDialog('from')
+      }
+      if (this.showToUnitPicker) {
+        this.UnitPickerDialog('to')
       }
     }
     .width('100%')
