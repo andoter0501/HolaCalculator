@@ -165,7 +165,7 @@ struct Index {
   @State showCategoryEditor: boolean = false;
   @State showFromUnitPicker: boolean = false;
   @State showToUnitPicker: boolean = false;
-  @State converterValue: string = '128';
+  @State converterValue: string = '';
   @State fromIndex: number = 2;
   @State toIndex: number = 1;
   @State fromUnitName: string = '米';
@@ -173,31 +173,31 @@ struct Index {
   @State stopwatchMs: number = 0;
   @State stopwatchRunning: boolean = false;
   @State lapItems: string[] = [];
-  @State monthlyIncome: string = '20000';
-  @State monthlyBasicDeduction: string = '5000';
+  @State monthlyIncome: string = '';
+  @State monthlyBasicDeduction: string = '';
   @State socialSecurityMode: 'rate' | 'fixed' = 'rate';
   @State housingFundMode: 'rate' | 'fixed' = 'rate';
-  @State socialSecurityRate: string = '10.5';
-  @State housingFundRate: string = '7';
-  @State socialSecurityFixed: string = '2100';
-  @State housingFundFixed: string = '1400';
+  @State socialSecurityRate: string = '';
+  @State housingFundRate: string = '';
+  @State socialSecurityFixed: string = '';
+  @State housingFundFixed: string = '';
   @State childEducationEnabled: boolean = false;
-  @State childEducationAmount: string = '2000';
+  @State childEducationAmount: string = '';
   @State continuingEducationEnabled: boolean = false;
-  @State continuingEducationAmount: string = '400';
+  @State continuingEducationAmount: string = '';
   @State seriousIllnessEnabled: boolean = false;
-  @State seriousIllnessAmount: string = '0';
+  @State seriousIllnessAmount: string = '';
   @State mortgageInterestEnabled: boolean = false;
-  @State mortgageInterestAmount: string = '1000';
+  @State mortgageInterestAmount: string = '';
   @State housingRentEnabled: boolean = false;
-  @State housingRentAmount: string = '1500';
+  @State housingRentAmount: string = '';
   @State elderSupportEnabled: boolean = false;
-  @State elderSupportAmount: string = '3000';
+  @State elderSupportAmount: string = '';
   @State childCareEnabled: boolean = false;
-  @State childCareAmount: string = '2000';
-  @State loanAmount: string = '100';
-  @State loanYears: string = '30';
-  @State annualRate: string = '4.2';
+  @State childCareAmount: string = '';
+  @State loanAmount: string = '';
+  @State loanYears: string = '';
+  @State annualRate: string = '';
   @State repaymentType: RepaymentType = 'interest';
   private timerId: number = -1;
 
@@ -1233,23 +1233,21 @@ struct Index {
         .margin({ bottom: 7 })
       Row() {
         Button('按比例')
-          .height(36)
+          .height(38)
           .layoutWeight(1)
           .fontSize(13)
           .fontColor(this.socialSecurityMode === 'rate' ? Color.White : '#147C78')
-          .backgroundColor(this.socialSecurityMode === 'rate' ? '#102729' : '#DFF2F0')
-          .borderRadius(8)
+          .backgroundColor(this.socialSecurityMode === 'rate' ? '#147C78' : '#DFF2F0')
           .margin({ right: 4 })
           .onClick((): void => {
             this.socialSecurityMode = 'rate';
           })
         Button('固定额度')
-          .height(36)
+          .height(38)
           .layoutWeight(1)
           .fontSize(13)
           .fontColor(this.socialSecurityMode === 'fixed' ? Color.White : '#147C78')
-          .backgroundColor(this.socialSecurityMode === 'fixed' ? '#102729' : '#DFF2F0')
-          .borderRadius(8)
+          .backgroundColor(this.socialSecurityMode === 'fixed' ? '#147C78' : '#DFF2F0')
           .margin({ left: 4 })
           .onClick((): void => {
             this.socialSecurityMode = 'fixed';
@@ -1271,23 +1269,21 @@ struct Index {
         .margin({ bottom: 7 })
       Row() {
         Button('按比例')
-          .height(36)
+          .height(38)
           .layoutWeight(1)
           .fontSize(13)
           .fontColor(this.housingFundMode === 'rate' ? Color.White : '#147C78')
-          .backgroundColor(this.housingFundMode === 'rate' ? '#102729' : '#DFF2F0')
-          .borderRadius(8)
+          .backgroundColor(this.housingFundMode === 'rate' ? '#147C78' : '#DFF2F0')
           .margin({ right: 4 })
           .onClick((): void => {
             this.housingFundMode = 'rate';
           })
         Button('固定额度')
-          .height(36)
+          .height(38)
           .layoutWeight(1)
           .fontSize(13)
           .fontColor(this.housingFundMode === 'fixed' ? Color.White : '#147C78')
-          .backgroundColor(this.housingFundMode === 'fixed' ? '#102729' : '#DFF2F0')
-          .borderRadius(8)
+          .backgroundColor(this.housingFundMode === 'fixed' ? '#147C78' : '#DFF2F0')
           .margin({ left: 4 })
           .onClick((): void => {
             this.housingFundMode = 'fixed';
@@ -1611,7 +1607,7 @@ struct Index {
       this.InputField('月收入（元）', this.monthlyIncome, '请输入月收入', (value: string): void => {
         this.monthlyIncome = value;
       })
-      this.InputField('起征点（元/月）', this.monthlyBasicDeduction, '默认 5000', (value: string): void => {
+      this.InputField('起征点（元/月）', this.monthlyBasicDeduction, '请输入起征点', (value: string): void => {
         this.monthlyBasicDeduction = value;
       })
 
