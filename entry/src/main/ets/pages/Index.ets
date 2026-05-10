@@ -42,14 +42,14 @@ interface DeductionItem {
 }
 
 const CATEGORIES: CalculatorCategory[] = [
-  { key: 'length', title: '长度', icon: 'm', desc: '米、厘米、英尺、英里' },
-  { key: 'volume', title: '体积', icon: 'L', desc: '升、毫升、立方米' },
-  { key: 'time', title: '时间', icon: 'h', desc: '秒、分钟、小时、天' },
+  { key: 'length', title: '长度', icon: '📏', desc: '米、厘米、英尺、英里' },
+  { key: 'volume', title: '体积', icon: '🧱', desc: '升、毫升、立方米' },
+  { key: 'time', title: '时间', icon: '⌛', desc: '秒、分钟、小时、天' },
   { key: 'stopwatch', title: '秒表', icon: '⏱', desc: '计时、暂停、计次' },
-  { key: 'weight', title: '重量', icon: 'kg', desc: '克、千克、磅、吨' },
-  { key: 'area', title: '面积', icon: '㎡', desc: '平方米、公顷、亩' },
-  { key: 'tax', title: '个税', icon: '¥', desc: '综合所得估算' },
-  { key: 'mortgage', title: '房贷', icon: '%', desc: '等额本息、等额本金' }
+  { key: 'weight', title: '重量', icon: '⚖️', desc: '克、千克、磅、吨' },
+  { key: 'area', title: '面积', icon: '📐', desc: '平方米、公顷、亩' },
+  { key: 'tax', title: '个税', icon: '💰', desc: '综合所得估算' },
+  { key: 'mortgage', title: '房贷', icon: '🏠', desc: '等额本息、等额本金' }
 ];
 
 const LENGTH_UNITS: UnitDefinition[] = [
@@ -508,6 +508,16 @@ struct Index {
     this.categoryItems = CATEGORIES.slice();
   }
 
+  private getTopCategoryItems(): CalculatorCategory[] {
+    const splitIndex: number = Math.ceil(this.categoryItems.length / 2);
+    return this.categoryItems.slice(0, splitIndex);
+  }
+
+  private getBottomCategoryItems(): CalculatorCategory[] {
+    const splitIndex: number = Math.ceil(this.categoryItems.length / 2);
+    return this.categoryItems.slice(splitIndex);
+  }
+
   private isConverterCategory(key: CalculatorKey): boolean {
     return key === 'length' || key === 'volume' || key === 'time' || key === 'weight' || key === 'area';
   }
@@ -751,57 +761,73 @@ struct Index {
   }
 
   @Builder
+  CategoryMenuItem(item: CalculatorCategory) {
+    Column() {
+      Text(item.icon)
+        .fontSize(22)
+        .textAlign(TextAlign.Center)
+        .width(51)
+        .height(51)
+        .borderRadius(16)
+        .backgroundColor(Color.White)
+        .border({ width: 1, color: this.activeKey === item.key ? '#147C78' : '#FFFFFF' })
+        .shadow({
+          radius: this.activeKey === item.key ? 10 : 7,
+          color: this.activeKey === item.key ? 'rgba(20,124,120,0.20)' : 'rgba(30,47,50,0.06)',
+          offsetX: 0,
+          offsetY: 4
+        })
+      Text(item.title)
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(this.activeKey === item.key ? '#147C78' : '#667579')
+        .textAlign(TextAlign.Center)
+        .margin({ top: 6 })
+    }
+    .width(67)
+    .height(79)
+    .onClick((): void => {
+      this.selectCategory(item.key);
+    })
+  }
+
+  @Builder
   CategoryTabs() {
     Row() {
       Scroll() {
-        Row({ space: 8 }) {
-          ForEach(this.categoryItems, (item: CalculatorCategory) => {
-            Row() {
-              Text(item.icon)
-                .fontSize(15)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(this.activeKey === item.key ? Color.White : '#147C78')
-                .width(28)
-                .height(28)
-                .textAlign(TextAlign.Center)
-                .borderRadius(8)
-                .backgroundColor(this.activeKey === item.key ? '#147C78' : '#DFF2F0')
-              Text(item.title)
-                .fontSize(14)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(this.activeKey === item.key ? '#147C78' : '#334247')
-                .margin({ left: 7 })
-            }
-            .height(46)
-            .padding({ left: 10, right: 12 })
-            .borderRadius(8)
-            .backgroundColor(this.activeKey === item.key ? '#F1FBFA' : Color.White)
-            .border({ width: 1, color: this.activeKey === item.key ? '#147C78' : '#E4ECEB' })
-            .onClick((): void => {
-              this.selectCategory(item.key);
-            })
-          }, (item: CalculatorCategory): string => item.key)
+        Column({ space: 8 }) {
+          Row({ space: 14 }) {
+            ForEach(this.getTopCategoryItems(), (item: CalculatorCategory) => {
+              this.CategoryMenuItem(item)
+            }, (item: CalculatorCategory): string => item.key)
+          }
+          Row({ space: 14 }) {
+            ForEach(this.getBottomCategoryItems(), (item: CalculatorCategory) => {
+              this.CategoryMenuItem(item)
+            }, (item: CalculatorCategory): string => item.key)
+          }
         }
-        .padding({ left: 16, right: 8, bottom: 2 })
+        .padding({ left: 18, right: 10, top: 4, bottom: 6 })
       }
       .scrollable(ScrollDirection.Horizontal)
       .scrollBar(BarState.Off)
       .layoutWeight(1)
 
       Button('≡')
-        .height(42)
-        .width(42)
-        .fontSize(22)
+        .height(40)
+        .width(40)
+        .fontSize(20)
         .fontColor('#147C78')
         .backgroundColor('rgba(0,0,0,0)')
         .borderRadius(0)
-        .margin({ right: 16, left: 4 })
+        .margin({ right: 14, left: 2, top: 6 })
         .onClick((): void => {
           this.showCategoryEditor = true;
         })
     }
     .width('100%')
-    .height(54)
+    .height(172)
+    .alignItems(VerticalAlign.Top)
   }
 
   @Builder
@@ -1835,24 +1861,14 @@ struct Index {
     Stack({ alignContent: Alignment.TopStart }) {
       Column() {
         Column() {
-          Text('Hola Calculator')
-            .fontSize(13)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#147C78')
-          Text('万能计算器')
-            .fontSize(30)
+          Text('Hola 计算器')
+            .fontSize(28)
             .fontWeight(FontWeight.Bold)
             .fontColor('#182326')
-            .margin({ top: 8 })
-          Text(this.getActiveCategory().desc)
-            .fontSize(14)
-            .fontColor('#667579')
-            .lineHeight(21)
-            .margin({ top: 10 })
         }
         .alignItems(HorizontalAlign.Start)
         .width('100%')
-        .padding({ left: 34, right: 34, top: 24, bottom: 12 })
+        .padding({ left: 34, right: 34, top: 24, bottom: 10 })
 
         this.CategoryTabs()
 

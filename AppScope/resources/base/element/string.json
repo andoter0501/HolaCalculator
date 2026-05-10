@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "万能计算器 entry 模块"
+    },
+    {
+      "name": "entry_ability_desc",
+      "value": "万能计算器主入口"
+    },
+    {
+      "name": "app_name",
+      "value": "Hola 计算器"
+    }
+  ]
+}
