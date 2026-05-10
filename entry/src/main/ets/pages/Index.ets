@@ -41,12 +41,6 @@ interface DeductionItem {
   note: string;
 }
 
-interface MonthlyTaxRow {
-  month: string;
-  tax: string;
-  netIncome: string;
-}
-
 const CATEGORIES: CalculatorCategory[] = [
   { key: 'length', title: '长度', icon: 'm', desc: '米、厘米、英尺、英里' },
   { key: 'volume', title: '体积', icon: 'L', desc: '升、毫升、立方米' },
@@ -115,6 +109,8 @@ const TAX_BRACKETS: TaxBracket[] = [
   { threshold: 36000, rate: 0.10, deduction: 2520 },
   { threshold: 0, rate: 0.03, deduction: 0 }
 ];
+
+const TAX_MONTHS: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 const DEDUCTION_ITEMS: DeductionItem[] = [
   {
@@ -638,29 +634,31 @@ struct Index {
   }
 
   private getTaxDue(): number {
-    return this.getTaxByTaxableIncome(this.getTaxableIncome());
+    return this.getCumulativeTax(12);
   }
 
-  private getMonthlyTaxRows(): MonthlyTaxRow[] {
-    const rows: MonthlyTaxRow[] = [];
+  private getMonthlyTaxableIncome(): number {
     const monthlyIncome: number = this.parseNumber(this.monthlyIncome);
-    const monthlyTaxableIncome: number = Math.max(0, monthlyIncome - this.parseNumber(this.monthlyBasicDeduction) -
+    return Math.max(0, monthlyIncome - this.parseNumber(this.monthlyBasicDeduction) -
       this.getMonthlySocialSecurityDeduction() - this.getMonthlyHousingFundDeduction() -
       this.getMonthlySpecialDeduction());
-    const monthlyDeductions: number = this.getMonthlySocialSecurityDeduction() + this.getMonthlyHousingFundDeduction();
-    let previousCumulativeTax: number = 0;
-    for (let month: number = 1; month <= 12; month++) {
-      const cumulativeTaxableIncome: number = monthlyTaxableIncome * month;
-      const cumulativeTax: number = this.getTaxByTaxableIncome(cumulativeTaxableIncome);
-      const monthlyTax: number = Math.max(0, cumulativeTax - previousCumulativeTax);
-      previousCumulativeTax = cumulativeTax;
-      rows.push({
-        month: `${month}月`,
-        tax: this.formatMoney(monthlyTax),
-        netIncome: this.formatMoney(monthlyIncome - monthlyDeductions - monthlyTax)
-      });
+  }
+
+  private getCumulativeTax(month: number): number {
+    return this.getTaxByTaxableIncome(this.getMonthlyTaxableIncome() * month);
+  }
+
+  private getMonthlyTax(month: number): number {
+    if (month <= 1) {
+      return this.getCumulativeTax(1);
     }
-    return rows;
+    return Math.max(0, this.getCumulativeTax(month) - this.getCumulativeTax(month - 1));
+  }
+
+  private getMonthlyNetIncome(month: number): number {
+    const monthlyIncome: number = this.parseNumber(this.monthlyIncome);
+    const monthlyDeductions: number = this.getMonthlySocialSecurityDeduction() + this.getMonthlyHousingFundDeduction();
+    return monthlyIncome - monthlyDeductions - this.getMonthlyTax(month);
   }
 
   private getTaxMetrics(): MetricItem[] {
@@ -672,7 +670,8 @@ struct Index {
       { label: '社保年度扣除', value: this.formatMoney(this.getAnnualSocialSecurityDeduction()) },
       { label: '公积金年度扣除', value: this.formatMoney(this.getAnnualHousingFundDeduction()) },
       { label: '专项附加扣除', value: this.formatMoney(this.getAnnualSpecialDeduction()) },
-      { label: '估算税后收入', value: this.formatMoney(annualIncome - taxDue) }
+      { label: '估算税后收入', value: this.formatMoney(annualIncome - this.getAnnualSocialSecurityDeduction() -
+        this.getAnnualHousingFundDeduction() - taxDue) }
     ];
   }
 
@@ -1137,18 +1136,18 @@ struct Index {
       .borderRadius({ topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 })
 
       Column() {
-        ForEach(this.getMonthlyTaxRows(), (row: MonthlyTaxRow) => {
+        ForEach(TAX_MONTHS, (month: number) => {
           Row() {
-            Text(row.month)
+            Text(`${month}月`)
               .layoutWeight(1)
               .fontSize(13)
               .fontColor('#667579')
-            Text(row.tax)
+            Text(this.formatMoney(this.getMonthlyTax(month)))
               .layoutWeight(1)
               .fontSize(13)
               .fontColor('#182326')
               .textAlign(TextAlign.End)
-            Text(row.netIncome)
+            Text(this.formatMoney(this.getMonthlyNetIncome(month)))
               .layoutWeight(1)
               .fontSize(13)
               .fontWeight(FontWeight.Bold)
@@ -1158,7 +1157,7 @@ struct Index {
           .width('100%')
           .padding({ left: 12, right: 12, top: 11, bottom: 11 })
           .border({ width: { bottom: 1 }, color: '#E4ECEB' })
-        }, (row: MonthlyTaxRow): string => row.month)
+        }, (month: number): string => `${month}`)
       }
       .width('100%')
       .border({ width: { left: 1, right: 1, bottom: 1 }, color: '#E4ECEB' })
@@ -1166,6 +1165,31 @@ struct Index {
     }
     .width('100%')
     .margin({ top: 16, bottom: 12 })
+  }
+
+  @Builder
+  TaxResultCard() {
+    Column() {
+      Text('年度应纳税额')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('rgba(255,255,255,0.72)')
+      Text(this.formatMoney(this.getTaxDue()))
+        .fontSize(34)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(Color.White)
+        .width('100%')
+        .margin({ top: 10, bottom: 8 })
+      Text('估算结果仅供参考，未覆盖城市社保、公积金差异。')
+        .fontSize(13)
+        .fontColor('rgba(255,255,255,0.68)')
+        .lineHeight(19)
+    }
+    .width('100%')
+    .padding(18)
+    .borderRadius(8)
+    .backgroundColor('#102729')
+    .margin({ top: 18 })
   }
 
   @Builder
@@ -1626,7 +1650,7 @@ struct Index {
         this.DeductionItemCard(item)
       }, (item: DeductionItem): string => item.key)
 
-      this.ResultCard('年度应纳税额', this.formatMoney(this.getTaxDue()), '估算结果仅供参考，未覆盖城市社保、公积金差异。')
+      this.TaxResultCard()
       this.MetricList(this.getTaxMetrics())
       this.MonthlyTaxTable()
     }
