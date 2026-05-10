@@ -1410,9 +1410,10 @@ struct Index {
             .fontSize(14)
             .fontWeight(FontWeight.Bold)
             .fontColor('#182326')
-          Text(item.standard)
+          Text(`${item.standard}  ${item.note}`)
             .fontSize(12)
-            .fontColor('#147C78')
+            .fontColor('#667579')
+            .lineHeight(17)
             .margin({ top: 3 })
         }
         .alignItems(HorizontalAlign.Start)
@@ -1424,11 +1425,6 @@ struct Index {
         this.setDeductionEnabled(item.key, !this.isDeductionEnabled(item.key));
       })
 
-      Text(item.note)
-        .fontSize(12)
-        .fontColor('#667579')
-        .lineHeight(17)
-        .margin({ top: 8, bottom: 8 })
       this.InputField(this.getDeductionAmountLabel(item.key), this.getDeductionAmount(item.key), '请输入扣除额', (value: string): void => {
         this.setDeductionAmount(item.key, value);
       })
