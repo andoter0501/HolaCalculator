@@ -165,7 +165,11 @@ struct Index {
   @State showCategoryEditor: boolean = false;
   @State showFromUnitPicker: boolean = false;
   @State showToUnitPicker: boolean = false;
-  @State converterValue: string = '';
+  @State lengthValue: string = '';
+  @State volumeValue: string = '';
+  @State timeValue: string = '';
+  @State weightValue: string = '';
+  @State areaValue: string = '';
   @State fromIndex: number = 2;
   @State toIndex: number = 1;
   @State fromUnitName: string = '米';
@@ -355,7 +359,7 @@ struct Index {
     const config: ConverterConfig = this.getConverterConfig();
     const fromUnit: UnitDefinition = this.findUnitByName(config.units, this.fromUnitName);
     const toUnit: UnitDefinition = this.findUnitByName(config.units, this.toUnitName);
-    const input: number = this.parseNumber(this.converterValue);
+    const input: number = this.parseNumber(this.getConverterInputValue());
     return input * fromUnit.factor / toUnit.factor;
   }
 
@@ -375,7 +379,34 @@ struct Index {
   }
 
   private getCurrentConversionText(): string {
-    return this.getConversionTextByState(this.activeKey, this.converterValue, this.fromUnitName, this.toUnitName);
+    return this.getConversionTextByState(this.activeKey, this.getConverterInputValue(), this.fromUnitName, this.toUnitName);
+  }
+
+  private getConverterInputValue(): string {
+    if (this.activeKey === 'length') {
+      return this.lengthValue;
+    }
+    if (this.activeKey === 'volume') {
+      return this.volumeValue;
+    }
+    if (this.activeKey === 'time') {
+      return this.timeValue;
+    }
+    if (this.activeKey === 'weight') {
+      return this.weightValue;
+    }
+    if (this.activeKey === 'area') {
+      return this.areaValue;
+    }
+    return '';
+  }
+
+  private clearAllConverterInputValues(): void {
+    this.lengthValue = '';
+    this.volumeValue = '';
+    this.timeValue = '';
+    this.weightValue = '';
+    this.areaValue = '';
   }
 
   private setFromUnitName(unitName: string): void {
@@ -455,6 +486,10 @@ struct Index {
   }
 
   private selectCategory(key: CalculatorKey): void {
+    if (this.activeKey === key) {
+      return;
+    }
+    this.clearAllConverterInputValues();
     this.activeKey = key;
     if (this.isConverterCategory(key)) {
       this.resetConverterIndexes(key);
@@ -1629,9 +1664,35 @@ struct Index {
         .fontColor('#667579')
         .lineHeight(21)
         .margin({ bottom: 16 })
-      this.InputField('数值', this.converterValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
-        this.converterValue = value;
-      })
+      if (this.activeKey === 'length') {
+        this.InputField('数值', this.lengthValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
+          this.lengthValue = value;
+        })
+      } else if (this.activeKey === 'volume') {
+        this.InputField('数值', this.volumeValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
+          this.volumeValue = value;
+        })
+      } else if (this.activeKey === 'time') {
+        this.InputField('数值', this.timeValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
+          this.timeValue = value;
+        })
+      } else if (this.activeKey === 'weight') {
+        this.InputField('数值', this.weightValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
+          this.weightValue = value;
+        })
+      } else if (this.activeKey === 'area') {
+        this.InputField('数值', this.areaValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
+          this.areaValue = value;
+        })
+      } else {
+        Text('数值')
+          .fontSize(13)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#415155')
+          .margin({ bottom: 7 })
+        TextInput({ text: '', placeholder: this.getConverterConfig().valuePlaceholder })
+          .height(44)
+      }
       Row() {
         Column() {
           this.UnitSelector('从', 'from')
