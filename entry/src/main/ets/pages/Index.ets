@@ -1361,7 +1361,13 @@ struct Index {
   }
 
   @Builder
-  InputField(label: string, value: string, placeholder: string, onChange: (value: string) => void) {
+  InputField(
+    label: string,
+    value: string,
+    placeholder: string,
+    onChange: (value: string) => void,
+    inputType: InputType = InputType.Normal
+  ) {
     Column() {
       Text(label)
         .fontSize(13)
@@ -1375,7 +1381,7 @@ struct Index {
         .borderRadius(8)
         .border({ width: 1, color: '#DCE5E4' })
         .padding({ left: 12, right: 12 })
-        .type(InputType.Normal)
+        .type(inputType)
         .onChange(onChange)
     }
     .width('100%')
@@ -1667,23 +1673,23 @@ struct Index {
       if (this.activeKey === 'length') {
         this.InputField('数值', this.lengthValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.lengthValue = value;
-        })
+        }, InputType.Number)
       } else if (this.activeKey === 'volume') {
         this.InputField('数值', this.volumeValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.volumeValue = value;
-        })
+        }, InputType.Number)
       } else if (this.activeKey === 'time') {
         this.InputField('数值', this.timeValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.timeValue = value;
-        })
+        }, InputType.Number)
       } else if (this.activeKey === 'weight') {
         this.InputField('数值', this.weightValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.weightValue = value;
-        })
+        }, InputType.Number)
       } else if (this.activeKey === 'area') {
         this.InputField('数值', this.areaValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.areaValue = value;
-        })
+        }, InputType.Number)
       } else {
         Text('数值')
           .fontSize(13)
