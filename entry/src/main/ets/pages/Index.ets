@@ -1,5 +1,6 @@
 type CalculatorKey = 'length' | 'volume' | 'time' | 'stopwatch' | 'weight' | 'area' | 'tax' | 'mortgage';
 type RepaymentType = 'interest' | 'principal';
+type MortgageLoanType = 'commercial' | 'fund' | 'mixed';
 
 interface CalculatorCategory {
   key: CalculatorKey;
@@ -26,6 +27,16 @@ interface ConverterConfig {
 interface MetricItem {
   label: string;
   value: string;
+}
+
+interface MortgagePartResult {
+  principal: number;
+  months: number;
+  monthlyPayment: number;
+  firstMonthPayment: number;
+  lastMonthPayment: number;
+  totalPayment: number;
+  totalInterest: number;
 }
 
 interface TaxBracket {
@@ -199,9 +210,13 @@ struct Index {
   @State elderSupportAmount: string = '';
   @State childCareEnabled: boolean = false;
   @State childCareAmount: string = '';
-  @State loanAmount: string = '';
-  @State loanYears: string = '';
-  @State annualRate: string = '';
+  @State mortgageLoanType: MortgageLoanType = 'commercial';
+  @State commercialLoanAmount: string = '';
+  @State commercialLoanYears: string = '';
+  @State commercialAnnualRate: string = '';
+  @State fundLoanAmount: string = '';
+  @State fundLoanYears: string = '';
+  @State fundAnnualRate: string = '';
   @State repaymentType: RepaymentType = 'interest';
   private timerId: number = -1;
 
@@ -720,79 +735,142 @@ struct Index {
     ];
   }
 
-  private getMonthlyRate(): number {
-    return this.parseNumber(this.annualRate) / 100 / 12;
+  private getPartMonthlyRate(rate: string): number {
+    return this.parseNumber(rate) / 100 / 12;
   }
 
-  private getLoanPrincipal(): number {
-    return this.parseNumber(this.loanAmount) * 10000;
+  private getPartPrincipal(amountWan: string): number {
+    return Math.max(0, this.parseNumber(amountWan) * 10000);
   }
 
-  private getLoanMonths(): number {
-    return Math.max(1, Math.round(this.parseNumber(this.loanYears) * 12));
+  private getPartMonths(years: string): number {
+    return Math.max(1, Math.round(this.parseNumber(years) * 12));
   }
 
-  private getEqualInterestPayment(): number {
-    const principal: number = this.getLoanPrincipal();
-    const months: number = this.getLoanMonths();
-    const monthlyRate: number = this.getMonthlyRate();
-    if (monthlyRate <= 0) {
-      return principal / months;
+  private calculateMortgagePart(amountWan: string, years: string, annualRate: string): MortgagePartResult {
+    const principal: number = this.getPartPrincipal(amountWan);
+    const months: number = this.getPartMonths(years);
+    const monthlyRate: number = this.getPartMonthlyRate(annualRate);
+    if (principal <= 0) {
+      return {
+        principal: 0,
+        months: 0,
+        monthlyPayment: 0,
+        firstMonthPayment: 0,
+        lastMonthPayment: 0,
+        totalPayment: 0,
+        totalInterest: 0
+      };
     }
-    const power: number = Math.pow(1 + monthlyRate, months);
-    return principal * monthlyRate * power / (power - 1);
+    let monthlyPayment: number;
+    if (monthlyRate <= 0) {
+      monthlyPayment = principal / months;
+    } else {
+      const power: number = Math.pow(1 + monthlyRate, months);
+      monthlyPayment = principal * monthlyRate * power / (power - 1);
+    }
+    const firstMonthPayment: number = principal / months + principal * monthlyRate;
+    const lastMonthPayment: number = principal / months + principal / months * monthlyRate;
+    let totalPayment: number;
+    if (this.repaymentType === 'interest') {
+      totalPayment = monthlyPayment * months;
+    } else {
+      totalPayment = principal + principal * monthlyRate * (months + 1) / 2;
+    }
+    return {
+      principal: principal,
+      months: months,
+      monthlyPayment: monthlyPayment,
+      firstMonthPayment: firstMonthPayment,
+      lastMonthPayment: lastMonthPayment,
+      totalPayment: totalPayment,
+      totalInterest: totalPayment - principal
+    };
   }
 
-  private getEqualPrincipalFirstPayment(): number {
-    const principal: number = this.getLoanPrincipal();
-    const months: number = this.getLoanMonths();
-    const monthlyRate: number = this.getMonthlyRate();
-    return principal / months + principal * monthlyRate;
+  private getCommercialPartResult(): MortgagePartResult {
+    return this.calculateMortgagePart(this.commercialLoanAmount, this.commercialLoanYears, this.commercialAnnualRate);
   }
 
-  private getEqualPrincipalLastPayment(): number {
-    const principal: number = this.getLoanPrincipal();
-    const months: number = this.getLoanMonths();
-    const monthlyRate: number = this.getMonthlyRate();
-    return principal / months + principal / months * monthlyRate;
+  private getFundPartResult(): MortgagePartResult {
+    return this.calculateMortgagePart(this.fundLoanAmount, this.fundLoanYears, this.fundAnnualRate);
+  }
+
+  private getActiveMortgageParts(): MortgagePartResult[] {
+    const results: MortgagePartResult[] = [];
+    if (this.mortgageLoanType === 'commercial' || this.mortgageLoanType === 'mixed') {
+      const commercialPart: MortgagePartResult = this.getCommercialPartResult();
+      if (commercialPart.principal > 0) {
+        results.push(commercialPart);
+      }
+    }
+    if (this.mortgageLoanType === 'fund' || this.mortgageLoanType === 'mixed') {
+      const fundPart: MortgagePartResult = this.getFundPartResult();
+      if (fundPart.principal > 0) {
+        results.push(fundPart);
+      }
+    }
+    return results;
   }
 
   private getMortgageMainPayment(): number {
-    if (this.repaymentType === 'interest') {
-      return this.getEqualInterestPayment();
+    const parts: MortgagePartResult[] = this.getActiveMortgageParts();
+    let total: number = 0;
+    for (let index: number = 0; index < parts.length; index++) {
+      if (this.repaymentType === 'interest') {
+        total += parts[index].monthlyPayment;
+      } else {
+        total += parts[index].firstMonthPayment;
+      }
     }
-    return this.getEqualPrincipalFirstPayment();
+    return total;
+  }
+
+  private getMortgageLastMonthPayment(): number {
+    const parts: MortgagePartResult[] = this.getActiveMortgageParts();
+    let total: number = 0;
+    for (let index: number = 0; index < parts.length; index++) {
+      total += parts[index].lastMonthPayment;
+    }
+    return total;
   }
 
   private getMortgageTotalPayment(): number {
-    const principal: number = this.getLoanPrincipal();
-    const months: number = this.getLoanMonths();
-    const monthlyRate: number = this.getMonthlyRate();
-    if (this.repaymentType === 'interest') {
-      return this.getEqualInterestPayment() * months;
+    const parts: MortgagePartResult[] = this.getActiveMortgageParts();
+    let total: number = 0;
+    for (let index: number = 0; index < parts.length; index++) {
+      total += parts[index].totalPayment;
     }
-    return principal + principal * monthlyRate * (months + 1) / 2;
+    return total;
   }
 
-  private getMortgageMetrics(): MetricItem[] {
-    const principal: number = this.getLoanPrincipal();
-    const months: number = this.getLoanMonths();
-    const monthlyRate: number = this.getMonthlyRate();
-    if (this.repaymentType === 'interest') {
-      const monthlyPayment: number = this.getEqualInterestPayment();
-      const totalPayment: number = monthlyPayment * months;
-      return [
-        { label: '总利息', value: this.formatMoney(totalPayment - principal) },
-        { label: '总还款', value: this.formatMoney(totalPayment) },
-        { label: '还款期数', value: `${months} 期` }
-      ];
+  private getMortgageTotalPrincipal(): number {
+    const parts: MortgagePartResult[] = this.getActiveMortgageParts();
+    let total: number = 0;
+    for (let index: number = 0; index < parts.length; index++) {
+      total += parts[index].principal;
     }
-    const totalInterest: number = principal * monthlyRate * (months + 1) / 2;
-    return [
-      { label: '末月月供', value: this.formatMoney(this.getEqualPrincipalLastPayment()) },
-      { label: '总利息', value: this.formatMoney(totalInterest) },
-      { label: '总还款', value: this.formatMoney(principal + totalInterest) }
-    ];
+    return total;
+  }
+
+  private getMortgageTotalInterest(): number {
+    const parts: MortgagePartResult[] = this.getActiveMortgageParts();
+    let total: number = 0;
+    for (let index: number = 0; index < parts.length; index++) {
+      total += parts[index].totalInterest;
+    }
+    return total;
+  }
+
+  private getMortgageMaxMonths(): number {
+    const parts: MortgagePartResult[] = this.getActiveMortgageParts();
+    let maxMonths: number = 0;
+    for (let index: number = 0; index < parts.length; index++) {
+      if (parts[index].months > maxMonths) {
+        maxMonths = parts[index].months;
+      }
+    }
+    return maxMonths;
   }
 
   @Builder
@@ -1283,7 +1361,7 @@ struct Index {
         .fontColor(Color.White)
         .width('100%')
         .margin({ top: 10, bottom: 8 })
-      Text('结果按输入利率本地计算，仅供参考。')
+      Text(this.repaymentType === 'interest' ? '组合贷按两笔贷款分别计算后汇总。' : `末月月供约 ${this.formatMoney(this.getMortgageLastMonthPayment())}`)
         .fontSize(13)
         .fontColor('rgba(255,255,255,0.68)')
         .lineHeight(19)
@@ -1302,9 +1380,7 @@ struct Index {
         Text(this.repaymentType === 'interest' ? '总利息' : '末月月供')
           .fontSize(14)
           .fontColor('#667579')
-        Text(this.repaymentType === 'interest' ?
-          this.formatMoney(this.getMortgageTotalPayment() - this.getLoanPrincipal()) :
-          this.formatMoney(this.getEqualPrincipalLastPayment()))
+        Text(this.repaymentType === 'interest' ? this.formatMoney(this.getMortgageTotalInterest()) : this.formatMoney(this.getMortgageLastMonthPayment()))
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
           .fontColor('#182326')
@@ -1319,9 +1395,7 @@ struct Index {
         Text(this.repaymentType === 'interest' ? '总还款' : '总利息')
           .fontSize(14)
           .fontColor('#667579')
-        Text(this.repaymentType === 'interest' ?
-          this.formatMoney(this.getMortgageTotalPayment()) :
-          this.formatMoney(this.getMortgageTotalPayment() - this.getLoanPrincipal()))
+        Text(this.repaymentType === 'interest' ? this.formatMoney(this.getMortgageTotalPayment()) : this.formatMoney(this.getMortgageTotalInterest()))
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
           .fontColor('#182326')
@@ -1333,10 +1407,10 @@ struct Index {
       .border({ width: { bottom: 1 }, color: '#E4ECEB' })
 
       Row() {
-        Text(this.repaymentType === 'interest' ? '还款期数' : '总还款')
+        Text(this.repaymentType === 'interest' ? '还款期数（最长）' : '总还款')
           .fontSize(14)
           .fontColor('#667579')
-        Text(this.repaymentType === 'interest' ? `${this.getLoanMonths()} 期` : this.formatMoney(this.getMortgageTotalPayment()))
+        Text(this.repaymentType === 'interest' ? `${this.getMortgageMaxMonths()} 期` : this.formatMoney(this.getMortgageTotalPayment()))
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
           .fontColor('#182326')
@@ -1349,6 +1423,117 @@ struct Index {
     }
     .width('100%')
     .margin({ bottom: 12 })
+  }
+
+  @Builder
+  MortgageLoanTypeToggle() {
+    Column() {
+      Text('贷款类型')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#415155')
+        .margin({ bottom: 7 })
+      Row() {
+        Button('商业贷款')
+          .height(38)
+          .layoutWeight(1)
+          .margin({ right: 4 })
+          .fontSize(13)
+          .fontColor(this.mortgageLoanType === 'commercial' ? Color.White : '#147C78')
+          .backgroundColor(this.mortgageLoanType === 'commercial' ? '#147C78' : '#DFF2F0')
+          .onClick((): void => {
+            this.mortgageLoanType = 'commercial';
+          })
+        Button('公积金贷款')
+          .height(38)
+          .layoutWeight(1)
+          .margin({ left: 4, right: 4 })
+          .fontSize(13)
+          .fontColor(this.mortgageLoanType === 'fund' ? Color.White : '#147C78')
+          .backgroundColor(this.mortgageLoanType === 'fund' ? '#147C78' : '#DFF2F0')
+          .onClick((): void => {
+            this.mortgageLoanType = 'fund';
+          })
+        Button('组合贷')
+          .height(38)
+          .layoutWeight(1)
+          .margin({ left: 4 })
+          .fontSize(13)
+          .fontColor(this.mortgageLoanType === 'mixed' ? Color.White : '#147C78')
+          .backgroundColor(this.mortgageLoanType === 'mixed' ? '#147C78' : '#DFF2F0')
+          .onClick((): void => {
+            this.mortgageLoanType = 'mixed';
+          })
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
+  MortgagePartInputCard(title: string, amount: string, years: string, rate: string,
+    onAmountChange: (value: string) => void, onYearsChange: (value: string) => void, onRateChange: (value: string) => void) {
+    Column() {
+      Text(title)
+        .fontSize(15)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#182326')
+        .margin({ bottom: 10 })
+      this.InputField('贷款金额（万元）', amount, '请输入贷款金额', onAmountChange, InputType.Number)
+      this.InputField('贷款年限（年）', years, '请输入贷款年限', onYearsChange, InputType.Number)
+      this.InputField('年利率（%）', rate, '请输入年利率', onRateChange, InputType.Number)
+    }
+    .width('100%')
+    .padding({ left: 12, right: 12, top: 12, bottom: 2 })
+    .borderRadius(8)
+    .backgroundColor('#F8FAFA')
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
+  MortgagePartSummary(title: string, part: MortgagePartResult) {
+    if (part.principal > 0) {
+      Column() {
+        Text(title)
+          .fontSize(14)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .margin({ bottom: 8 })
+        Row() {
+          Text(this.repaymentType === 'interest' ? '月供' : '首月/末月')
+            .fontSize(13)
+            .fontColor('#667579')
+          Text(this.repaymentType === 'interest' ?
+            this.formatMoney(part.monthlyPayment) :
+            `${this.formatMoney(part.firstMonthPayment)} / ${this.formatMoney(part.lastMonthPayment)}`)
+            .fontSize(13)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+        .padding({ top: 8, bottom: 8 })
+        Row() {
+          Text('总利息')
+            .fontSize(13)
+            .fontColor('#667579')
+          Text(this.formatMoney(part.totalInterest))
+            .fontSize(13)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+      }
+      .width('100%')
+      .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+      .borderRadius(8)
+      .backgroundColor('#F8FAFA')
+      .margin({ bottom: 10 })
+    }
   }
 
   @Builder
@@ -1844,20 +2029,58 @@ struct Index {
   MortgagePanel() {
     Column() {
       this.SectionTitle('房贷计算')
-      Text('支持等额本息和等额本金，输入商业贷款金额、年限和年利率。')
+      Text('支持商业贷款、公积金贷款和组合贷，支持等额本息与等额本金，组合贷可分别设置两部分年限与利率。')
         .fontSize(14)
         .fontColor('#667579')
         .lineHeight(21)
         .margin({ bottom: 16 })
-      this.InputField('贷款总额（万元）', this.loanAmount, '请输入贷款总额', (value: string): void => {
-        this.loanAmount = value;
-      })
-      this.InputField('贷款年限（年）', this.loanYears, '请输入贷款年限', (value: string): void => {
-        this.loanYears = value;
-      })
-      this.InputField('年利率（%）', this.annualRate, '请输入年利率', (value: string): void => {
-        this.annualRate = value;
-      })
+      this.MortgageLoanTypeToggle()
+
+      if (this.mortgageLoanType === 'commercial') {
+        this.MortgagePartInputCard('商业贷款', this.commercialLoanAmount, this.commercialLoanYears, this.commercialAnnualRate,
+          (value: string): void => {
+            this.commercialLoanAmount = value;
+          },
+          (value: string): void => {
+            this.commercialLoanYears = value;
+          },
+          (value: string): void => {
+            this.commercialAnnualRate = value;
+          })
+      } else if (this.mortgageLoanType === 'fund') {
+        this.MortgagePartInputCard('公积金贷款', this.fundLoanAmount, this.fundLoanYears, this.fundAnnualRate,
+          (value: string): void => {
+            this.fundLoanAmount = value;
+          },
+          (value: string): void => {
+            this.fundLoanYears = value;
+          },
+          (value: string): void => {
+            this.fundAnnualRate = value;
+          })
+      } else {
+        this.MortgagePartInputCard('商业贷款', this.commercialLoanAmount, this.commercialLoanYears, this.commercialAnnualRate,
+          (value: string): void => {
+            this.commercialLoanAmount = value;
+          },
+          (value: string): void => {
+            this.commercialLoanYears = value;
+          },
+          (value: string): void => {
+            this.commercialAnnualRate = value;
+          })
+        this.MortgagePartInputCard('公积金贷款', this.fundLoanAmount, this.fundLoanYears, this.fundAnnualRate,
+          (value: string): void => {
+            this.fundLoanAmount = value;
+          },
+          (value: string): void => {
+            this.fundLoanYears = value;
+          },
+          (value: string): void => {
+            this.fundAnnualRate = value;
+          })
+      }
+
       Row() {
         Button('等额本息')
           .height(38)
@@ -1882,6 +2105,10 @@ struct Index {
       .margin({ top: 2 })
       this.MortgageResultCard()
       this.MortgageMetricList()
+      if (this.mortgageLoanType === 'mixed') {
+        this.MortgagePartSummary('商业贷款明细', this.getCommercialPartResult())
+        this.MortgagePartSummary('公积金贷款明细', this.getFundPartResult())
+      }
     }
     .width('100%')
   }
