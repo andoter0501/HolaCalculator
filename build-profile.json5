@@ -7,11 +7,24 @@
         "material": {
           "certpath": "/Users/a123/.ohos/config/default_HolaCalculator_W9-ptNyneCQH24_G4uWfuJfFPXG6pIG9V1h6MrIfvpI=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B390EAEBA90751E5B5AF08991F4B8162B91E0FA45FEA3EDD2EB2ADA390E80D08D28A19640B87773",
+          "keyPassword": "0000001BA7E35B5067C9E4966D2290E0A78FB73703CD03713245B9A52229CDB939D0F16012EF6F08DBC4D7",
           "profile": "/Users/a123/.ohos/config/default_HolaCalculator_W9-ptNyneCQH24_G4uWfuJfFPXG6pIG9V1h6MrIfvpI=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "/Users/a123/.ohos/config/default_HolaCalculator_W9-ptNyneCQH24_G4uWfuJfFPXG6pIG9V1h6MrIfvpI=.p12",
-          "storePassword": "0000001B0114A97BCDB0470A70127E8D95AC0B02FB9A8F00D46401C90B0C73D7B081AA6735C4FE4F1AC249"
+          "storePassword": "0000001BFF38DEB6DC68BF2753B7F1B80F570FE6200E444EC0B47204F0C2A320D39243F6171DBD5E5F9634"
+        }
+      },
+      {
+        "name": "publish",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "/Users/a123/shiwei/project/HolaCalculator/publish/wan.p12",
+          "storePassword": "0000001A940F834062C26D49E257CDEAD3D5055AE8DFF6D4DE072A2B5B3F6E3B28043EBD8773D1F3033A",
+          "keyAlias": "sensors123",
+          "keyPassword": "0000001A7172FDF85EEB17844C991C62C6318DCDC6E1259F9EE4B38464CCC670F995C7BAB98262A92D7A",
+          "signAlg": "SHA256withECDSA",
+          "profile": "/Users/a123/shiwei/project/HolaCalculator/publish/holacalculatorRelease.p7b",
+          "certpath": "/Users/a123/shiwei/project/HolaCalculator/publish/wanAndroid.cer"
         }
       }
     ],

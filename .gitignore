@@ -16,3 +16,4 @@ oh_modules/
 
 # Logs
 *.log
+/publish/
