@@ -1,4 +1,4 @@
-type CalculatorKey = 'length' | 'volume' | 'time' | 'stopwatch' | 'weight' | 'area' | 'tax' | 'mortgage';
+type CalculatorKey = 'normal' | 'length' | 'volume' | 'time' | 'stopwatch' | 'weight' | 'area' | 'tax' | 'mortgage';
 type RepaymentType = 'interest' | 'principal';
 type MortgageLoanType = 'commercial' | 'fund' | 'mixed';
 type HousingRentTier = 'large' | 'medium' | 'small';
@@ -54,6 +54,7 @@ interface DeductionItem {
 }
 
 const CATEGORIES: CalculatorCategory[] = [
+  { key: 'normal', title: '计算器', icon: '🔢', desc: '加减乘除' },
   { key: 'length', title: '长度', icon: '📏', desc: '米、厘米、英尺、英里' },
   { key: 'volume', title: '体积', icon: '🧱', desc: '升、毫升、立方米' },
   { key: 'time', title: '时间', icon: '⌛', desc: '秒、分钟、小时、天' },
@@ -172,7 +173,7 @@ const DEDUCTION_ITEMS: DeductionItem[] = [
 @Entry
 @Component
 struct Index {
-  @State activeKey: CalculatorKey = 'length';
+  @State activeKey: CalculatorKey = 'normal';
   @State converterKey: CalculatorKey = 'length';
   @State categoryItems: CalculatorCategory[] = CATEGORIES.slice();
   @State showCategoryEditor: boolean = false;
@@ -190,6 +191,9 @@ struct Index {
   @State stopwatchMs: number = 0;
   @State stopwatchRunning: boolean = false;
   @State lapItems: string[] = [];
+  @State normalExpression: string = '';
+  @State normalDisplay: string = '0';
+  @State normalJustEvaluated: boolean = false;
   @State monthlyIncome: string = '';
   @State monthlyBasicDeduction: string = '5000';
   @State socialSecurityMode: 'rate' | 'fixed' = 'rate';
@@ -377,6 +381,251 @@ struct Index {
       return '¥ 0.00';
     }
     return `¥ ${value.toFixed(2)}`;
+  }
+
+  private isNormalOperator(value: string): boolean {
+    return value === '+' || value === '-' || value === '*' || value === '/';
+  }
+
+  private getNormalPreviewText(): string {
+    if (this.normalExpression === '') {
+      return '';
+    }
+    return this.normalExpression
+      .replace(/\*/g, '×')
+      .replace(/\//g, '÷');
+  }
+
+  private formatNormalResult(value: number): string {
+    if (!Number.isFinite(value)) {
+      return '错误';
+    }
+    return this.formatNumber(value, 10);
+  }
+
+  private getNormalPrecedence(operator: string): number {
+    if (operator === '*' || operator === '/') {
+      return 2;
+    }
+    if (operator === '+' || operator === '-') {
+      return 1;
+    }
+    return 0;
+  }
+
+  private applyNormalOperator(left: number, right: number, operator: string): number {
+    if (operator === '+') {
+      return left + right;
+    }
+    if (operator === '-') {
+      return left - right;
+    }
+    if (operator === '*') {
+      return left * right;
+    }
+    if (operator === '/') {
+      return left / right;
+    }
+    return right;
+  }
+
+  private tokenizeNormalExpression(expression: string): string[] {
+    const tokens: string[] = [];
+    let current: string = '';
+    for (let index: number = 0; index < expression.length; index++) {
+      const char: string = expression.charAt(index);
+      if (this.isNormalOperator(char)) {
+        if (char === '-' && (index === 0 || this.isNormalOperator(expression.charAt(index - 1)))) {
+          current += char;
+        } else {
+          if (current !== '') {
+            tokens.push(current);
+            current = '';
+          }
+          tokens.push(char);
+        }
+      } else {
+        current += char;
+      }
+    }
+    if (current !== '') {
+      tokens.push(current);
+    }
+    return tokens;
+  }
+
+  private evaluateNormalExpression(expression: string): number {
+    const tokens: string[] = this.tokenizeNormalExpression(expression);
+    const values: number[] = [];
+    const operators: string[] = [];
+    for (let index: number = 0; index < tokens.length; index++) {
+      const token: string = tokens[index];
+      if (this.isNormalOperator(token)) {
+        while (operators.length > 0 &&
+          this.getNormalPrecedence(operators[operators.length - 1]) >= this.getNormalPrecedence(token)) {
+          const rightValue: number | undefined = values.pop();
+          const leftValue: number | undefined = values.pop();
+          const operator: string | undefined = operators.pop();
+          if (rightValue === undefined || leftValue === undefined || operator === undefined) {
+            return Number.NaN;
+          }
+          values.push(this.applyNormalOperator(leftValue, rightValue, operator));
+        }
+        operators.push(token);
+      } else {
+        const parsed: number = this.parseNumber(token);
+        if (!Number.isFinite(parsed)) {
+          return Number.NaN;
+        }
+        values.push(parsed);
+      }
+    }
+    while (operators.length > 0) {
+      const rightValue: number | undefined = values.pop();
+      const leftValue: number | undefined = values.pop();
+      const operator: string | undefined = operators.pop();
+      if (rightValue === undefined || leftValue === undefined || operator === undefined) {
+        return Number.NaN;
+      }
+      values.push(this.applyNormalOperator(leftValue, rightValue, operator));
+    }
+    if (values.length !== 1) {
+      return Number.NaN;
+    }
+    return values[0];
+  }
+
+  private trimTrailingNormalOperator(expression: string): string {
+    if (expression.length === 0) {
+      return expression;
+    }
+    const lastChar: string = expression.charAt(expression.length - 1);
+    if (this.isNormalOperator(lastChar)) {
+      return expression.substring(0, expression.length - 1);
+    }
+    return expression;
+  }
+
+  private getNormalCurrentOperand(): string {
+    for (let index: number = this.normalExpression.length - 1; index >= 0; index--) {
+      const char: string = this.normalExpression.charAt(index);
+      if (this.isNormalOperator(char)) {
+        if (char === '-' && index === 0) {
+          return this.normalExpression;
+        }
+        return this.normalExpression.substring(index + 1);
+      }
+    }
+    return this.normalExpression;
+  }
+
+  private refreshNormalDisplayFromExpression(): void {
+    const currentOperand: string = this.getNormalCurrentOperand();
+    if (currentOperand === '') {
+      this.normalDisplay = '0';
+    } else {
+      this.normalDisplay = currentOperand;
+    }
+  }
+
+  private appendNormalDigit(value: string): void {
+    if (this.normalJustEvaluated || this.normalDisplay === '错误') {
+      this.normalExpression = '';
+      this.normalDisplay = '0';
+      this.normalJustEvaluated = false;
+    }
+    const currentOperand: string = this.getNormalCurrentOperand();
+    if (currentOperand === '0') {
+      this.normalExpression = this.normalExpression.substring(0, this.normalExpression.length - 1) + value;
+    } else {
+      this.normalExpression += value;
+    }
+    this.refreshNormalDisplayFromExpression();
+  }
+
+  private appendNormalDecimal(): void {
+    if (this.normalJustEvaluated || this.normalDisplay === '错误') {
+      this.normalExpression = '';
+      this.normalDisplay = '0';
+      this.normalJustEvaluated = false;
+    }
+    const currentOperand: string = this.getNormalCurrentOperand();
+    if (currentOperand.indexOf('.') >= 0) {
+      return;
+    }
+    if (currentOperand === '') {
+      this.normalExpression += '0.';
+    } else {
+      this.normalExpression += '.';
+    }
+    this.refreshNormalDisplayFromExpression();
+  }
+
+  private appendNormalOperator(operator: string): void {
+    if (this.normalDisplay === '错误') {
+      return;
+    }
+    if (this.normalExpression === '') {
+      if (operator === '-') {
+        this.normalExpression = '-';
+        this.normalDisplay = '-';
+      }
+      return;
+    }
+    this.normalJustEvaluated = false;
+    const lastChar: string = this.normalExpression.charAt(this.normalExpression.length - 1);
+    if (this.isNormalOperator(lastChar)) {
+      this.normalExpression = this.normalExpression.substring(0, this.normalExpression.length - 1) + operator;
+    } else {
+      this.normalExpression += operator;
+    }
+    this.refreshNormalDisplayFromExpression();
+  }
+
+  private clearNormalCalculator(): void {
+    this.normalExpression = '';
+    this.normalDisplay = '0';
+    this.normalJustEvaluated = false;
+  }
+
+  private backspaceNormalCalculator(): void {
+    if (this.normalJustEvaluated || this.normalDisplay === '错误') {
+      this.clearNormalCalculator();
+      return;
+    }
+    if (this.normalExpression.length > 0) {
+      this.normalExpression = this.normalExpression.substring(0, this.normalExpression.length - 1);
+    }
+    this.refreshNormalDisplayFromExpression();
+  }
+
+  private applyNormalPercent(): void {
+    if (this.normalExpression === '' || this.normalDisplay === '错误') {
+      return;
+    }
+    const currentOperand: string = this.getNormalCurrentOperand();
+    if (currentOperand === '' || currentOperand === '-') {
+      return;
+    }
+    const percentValue: string = this.formatNormalResult(this.parseNumber(currentOperand) / 100);
+    this.normalExpression = this.normalExpression.substring(0, this.normalExpression.length - currentOperand.length) + percentValue;
+    this.refreshNormalDisplayFromExpression();
+  }
+
+  private calculateNormalResult(): void {
+    const expression: string = this.trimTrailingNormalOperator(this.normalExpression);
+    if (expression === '' || expression === '-') {
+      return;
+    }
+    const result: number = this.evaluateNormalExpression(expression);
+    this.normalDisplay = this.formatNormalResult(result);
+    if (Number.isFinite(result)) {
+      this.normalExpression = this.normalDisplay;
+      this.normalJustEvaluated = true;
+    } else {
+      this.normalExpression = '';
+      this.normalJustEvaluated = false;
+    }
   }
 
   private getConversionValue(): number {
@@ -616,13 +865,11 @@ struct Index {
   }
 
   private getTopCategoryItems(): CalculatorCategory[] {
-    const splitIndex: number = Math.ceil(this.categoryItems.length / 2);
-    return this.categoryItems.slice(0, splitIndex);
+    return this.categoryItems.slice(0, 5);
   }
 
   private getBottomCategoryItems(): CalculatorCategory[] {
-    const splitIndex: number = Math.ceil(this.categoryItems.length / 2);
-    return this.categoryItems.slice(splitIndex);
+    return this.categoryItems.slice(5);
   }
 
   private isConverterCategory(key: CalculatorKey): boolean {
@@ -952,10 +1199,12 @@ struct Index {
         .fontWeight(FontWeight.Bold)
         .fontColor(this.activeKey === item.key ? '#147C78' : '#667579')
         .textAlign(TextAlign.Center)
+        .width('100%')
         .margin({ top: 6 })
     }
-    .width(67)
-    .height(79)
+    .width(72)
+    .height(78)
+    .alignItems(HorizontalAlign.Center)
     .onClick((): void => {
       this.selectCategory(item.key);
     })
@@ -966,15 +1215,22 @@ struct Index {
     Row() {
       Scroll() {
         Column({ space: 8 }) {
-          Row({ space: 14 }) {
+          Row({ space: 10 }) {
             ForEach(this.getTopCategoryItems(), (item: CalculatorCategory) => {
               this.CategoryMenuItem(item)
             }, (item: CalculatorCategory): string => item.key)
           }
-          Row({ space: 14 }) {
+          Row({ space: 10 }) {
             ForEach(this.getBottomCategoryItems(), (item: CalculatorCategory) => {
               this.CategoryMenuItem(item)
             }, (item: CalculatorCategory): string => item.key)
+            if (this.getBottomCategoryItems().length < 5) {
+              ForEach([0], (index: number) => {
+                Blank()
+                  .width(72)
+                  .height(78)
+              }, (index: number): string => `${index}`)
+            }
           }
         }
         .padding({ left: 18, right: 10, top: 4, bottom: 6 })
@@ -2155,6 +2411,161 @@ struct Index {
   }
 
   @Builder
+  NormalCalcButton(label: string, textColor: string, backgroundColor: string, onClick: () => void) {
+    Button(label)
+      .height(54)
+      .layoutWeight(1)
+      .fontSize(28)
+      .fontWeight(FontWeight.Medium)
+      .fontColor(textColor)
+      .backgroundColor(backgroundColor)
+      .borderRadius(27)
+      .margin({ left: 4, right: 4, top: 5, bottom: 5 })
+      .shadow({
+        radius: 8,
+        color: 'rgba(30,47,50,0.08)',
+        offsetX: 0,
+        offsetY: 4
+      })
+      .onClick(onClick)
+  }
+
+  @Builder
+  NormalEqualButton() {
+    Button('=')
+      .height(118)
+      .width(58)
+      .fontSize(32)
+      .fontWeight(FontWeight.Bold)
+      .fontColor(Color.White)
+      .backgroundColor('#1E4AA8')
+      .borderRadius(29)
+      .margin({ left: 4, right: 4, top: 5, bottom: 5 })
+      .shadow({
+        radius: 10,
+        color: 'rgba(30,74,168,0.26)',
+        offsetX: 0,
+        offsetY: 5
+      })
+      .onClick((): void => {
+        this.calculateNormalResult();
+      })
+  }
+
+  @Builder
+  NormalCalculatorPanel() {
+    Column() {
+      Column() {
+        Text(this.getNormalPreviewText())
+          .height(24)
+          .fontSize(18)
+          .fontColor('#7C6F82')
+          .textAlign(TextAlign.End)
+          .width('100%')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+        Text(this.normalDisplay)
+          .height(62)
+          .fontSize(42)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#17121D')
+          .textAlign(TextAlign.End)
+          .width('100%')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
+      .width('100%')
+      .padding({ left: 10, right: 10, top: 8, bottom: 8 })
+      .margin({ bottom: 6 })
+
+      Row() {
+        this.NormalCalcButton('C', '#1E4AA8', '#F5EFF8', (): void => {
+          this.clearNormalCalculator();
+        })
+        this.NormalCalcButton('÷', '#1E4AA8', '#F5EFF8', (): void => {
+          this.appendNormalOperator('/');
+        })
+        this.NormalCalcButton('×', '#1E4AA8', '#F5EFF8', (): void => {
+          this.appendNormalOperator('*');
+        })
+        this.NormalCalcButton('⌫', '#1E4AA8', '#F5EFF8', (): void => {
+          this.backspaceNormalCalculator();
+        })
+      }
+      .width('100%')
+
+      Row() {
+        this.NormalCalcButton('7', '#17121D', '#F8F1FA', (): void => {
+          this.appendNormalDigit('7');
+        })
+        this.NormalCalcButton('8', '#17121D', '#F8F1FA', (): void => {
+          this.appendNormalDigit('8');
+        })
+        this.NormalCalcButton('9', '#17121D', '#F8F1FA', (): void => {
+          this.appendNormalDigit('9');
+        })
+        this.NormalCalcButton('-', '#1E4AA8', '#F5EFF8', (): void => {
+          this.appendNormalOperator('-');
+        })
+      }
+      .width('100%')
+
+      Row() {
+        this.NormalCalcButton('4', '#17121D', '#F8F1FA', (): void => {
+          this.appendNormalDigit('4');
+        })
+        this.NormalCalcButton('5', '#17121D', '#F8F1FA', (): void => {
+          this.appendNormalDigit('5');
+        })
+        this.NormalCalcButton('6', '#17121D', '#F8F1FA', (): void => {
+          this.appendNormalDigit('6');
+        })
+        this.NormalCalcButton('+', '#1E4AA8', '#F5EFF8', (): void => {
+          this.appendNormalOperator('+');
+        })
+      }
+      .width('100%')
+
+      Row() {
+        Column() {
+          Row() {
+            this.NormalCalcButton('1', '#17121D', '#F8F1FA', (): void => {
+              this.appendNormalDigit('1');
+            })
+            this.NormalCalcButton('2', '#17121D', '#F8F1FA', (): void => {
+              this.appendNormalDigit('2');
+            })
+            this.NormalCalcButton('3', '#17121D', '#F8F1FA', (): void => {
+              this.appendNormalDigit('3');
+            })
+          }
+          .width('100%')
+          Row() {
+            this.NormalCalcButton('%', '#17121D', '#F8F1FA', (): void => {
+              this.applyNormalPercent();
+            })
+            this.NormalCalcButton('0', '#17121D', '#F8F1FA', (): void => {
+              this.appendNormalDigit('0');
+            })
+            this.NormalCalcButton('.', '#17121D', '#F8F1FA', (): void => {
+              this.appendNormalDecimal();
+            })
+          }
+          .width('100%')
+        }
+        .layoutWeight(1)
+        this.NormalEqualButton()
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .height('100%')
+    .padding({ left: 4, right: 4, bottom: 4 })
+    .backgroundColor('#F8EAF8')
+    .borderRadius(8)
+  }
+
+  @Builder
   TaxPanel() {
     Column() {
       this.SectionTitle('个税估算')
@@ -2323,7 +2734,9 @@ struct Index {
 
   @Builder
   ActiveToolPanel() {
-    if (this.isConverterCategory(this.activeKey)) {
+    if (this.activeKey === 'normal') {
+      this.NormalCalculatorPanel()
+    } else if (this.isConverterCategory(this.activeKey)) {
       this.ConverterPanel()
     } else if (this.activeKey === 'stopwatch') {
       this.StopwatchPanel()
@@ -2349,31 +2762,53 @@ struct Index {
 
         this.CategoryTabs()
 
-        Scroll() {
+        if (this.activeKey === 'normal') {
           Column() {
             Column() {
               this.ActiveToolPanel()
             }
             .width('100%')
-            .padding(18)
-            .borderRadius(16)
-            .backgroundColor(Color.White)
-            .border({ width: 1, color: '#E4ECEB' })
+            .height('100%')
+            .padding(10)
+            .borderRadius(8)
+            .backgroundColor('#F8EAF8')
             .align(Alignment.TopStart)
             .alignSelf(ItemAlign.Start)
           }
           .width('100%')
+          .layoutWeight(1)
           .alignItems(HorizontalAlign.Start)
           .justifyContent(FlexAlign.Start)
-          .padding({ left: 16, right: 16, top: 10, bottom: 28 })
+          .padding({ left: 16, right: 16, top: 4, bottom: 10 })
+          .align(Alignment.TopStart)
+          .alignSelf(ItemAlign.Start)
+        } else {
+          Scroll() {
+            Column() {
+              Column() {
+                this.ActiveToolPanel()
+              }
+              .width('100%')
+              .padding(18)
+              .borderRadius(16)
+              .backgroundColor(Color.White)
+              .border({ width: 1, color: '#E4ECEB' })
+              .align(Alignment.TopStart)
+              .alignSelf(ItemAlign.Start)
+            }
+            .width('100%')
+            .alignItems(HorizontalAlign.Start)
+            .justifyContent(FlexAlign.Start)
+            .padding({ left: 16, right: 16, top: 10, bottom: 28 })
+            .align(Alignment.TopStart)
+            .alignSelf(ItemAlign.Start)
+          }
+          .width('100%')
+          .layoutWeight(1)
+          .scrollBar(BarState.Off)
           .align(Alignment.TopStart)
           .alignSelf(ItemAlign.Start)
         }
-        .width('100%')
-        .layoutWeight(1)
-        .scrollBar(BarState.Off)
-        .align(Alignment.TopStart)
-        .alignSelf(ItemAlign.Start)
       }
       .width('100%')
       .height('100%')
