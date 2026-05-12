@@ -173,6 +173,7 @@ const DEDUCTION_ITEMS: DeductionItem[] = [
 @Component
 struct Index {
   @State activeKey: CalculatorKey = 'length';
+  @State converterKey: CalculatorKey = 'length';
   @State categoryItems: CalculatorCategory[] = CATEGORIES.slice();
   @State showCategoryEditor: boolean = false;
   @State showFromUnitPicker: boolean = false;
@@ -227,7 +228,7 @@ struct Index {
   }
 
   private getConverterConfig(): ConverterConfig {
-    if (this.activeKey === 'volume') {
+    if (this.converterKey === 'volume') {
       return {
         title: '体积换算',
         desc: '升、毫升、立方厘米、立方米和加仑快速换算。',
@@ -237,7 +238,7 @@ struct Index {
         estimateNote: ''
       };
     }
-    if (this.activeKey === 'time') {
+    if (this.converterKey === 'time') {
       return {
         title: '时间换算',
         desc: '秒、分钟、小时、天、周、月、年之间换算。',
@@ -247,7 +248,7 @@ struct Index {
         estimateNote: '月和年按固定平均值估算。'
       };
     }
-    if (this.activeKey === 'weight') {
+    if (this.converterKey === 'weight') {
       return {
         title: '重量换算',
         desc: '毫克、克、千克、吨、盎司和磅之间换算。',
@@ -257,7 +258,7 @@ struct Index {
         estimateNote: ''
       };
     }
-    if (this.activeKey === 'area') {
+    if (this.converterKey === 'area') {
       return {
         title: '面积换算',
         desc: '平方米、亩、公顷、平方千米等面积单位换算。',
@@ -396,23 +397,23 @@ struct Index {
   }
 
   private getCurrentConversionText(): string {
-    return this.getConversionTextByState(this.activeKey, this.getConverterInputValue(), this.fromUnitName, this.toUnitName);
+    return this.getConversionTextByState(this.converterKey, this.getConverterInputValue(), this.fromUnitName, this.toUnitName);
   }
 
   private getConverterInputValue(): string {
-    if (this.activeKey === 'length') {
+    if (this.converterKey === 'length') {
       return this.lengthValue;
     }
-    if (this.activeKey === 'volume') {
+    if (this.converterKey === 'volume') {
       return this.volumeValue;
     }
-    if (this.activeKey === 'time') {
+    if (this.converterKey === 'time') {
       return this.timeValue;
     }
-    if (this.activeKey === 'weight') {
+    if (this.converterKey === 'weight') {
       return this.weightValue;
     }
-    if (this.activeKey === 'area') {
+    if (this.converterKey === 'area') {
       return this.areaValue;
     }
     return '';
@@ -505,6 +506,9 @@ struct Index {
   private selectCategory(key: CalculatorKey): void {
     if (this.activeKey === key) {
       return;
+    }
+    if (this.isConverterCategory(key)) {
+      this.converterKey = key;
     }
     this.clearAllConverterInputValues();
     this.activeKey = key;
@@ -1915,32 +1919,36 @@ struct Index {
   @Builder
   ConverterPanel() {
     Column() {
-      this.SectionTitle(this.getConverterConfig().title)
+      Text(this.getConverterConfig().title)
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#182326')
+        .margin({ bottom: 12 })
       Text(this.getConverterConfig().desc)
         .fontSize(14)
         .fontColor('#667579')
         .lineHeight(21)
         .margin({ bottom: 16 })
-      if (this.activeKey === 'length') {
+      if (this.converterKey === 'length') {
         this.InputField('数值', this.lengthValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.lengthValue = value;
-        }, InputType.Number)
-      } else if (this.activeKey === 'volume') {
+        }, InputType.NUMBER_DECIMAL)
+      } else if (this.converterKey === 'volume') {
         this.InputField('数值', this.volumeValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.volumeValue = value;
-        }, InputType.Number)
-      } else if (this.activeKey === 'time') {
+        }, InputType.NUMBER_DECIMAL)
+      } else if (this.converterKey === 'time') {
         this.InputField('数值', this.timeValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.timeValue = value;
-        }, InputType.Number)
-      } else if (this.activeKey === 'weight') {
+        }, InputType.NUMBER_DECIMAL)
+      } else if (this.converterKey === 'weight') {
         this.InputField('数值', this.weightValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.weightValue = value;
-        }, InputType.Number)
-      } else if (this.activeKey === 'area') {
+        }, InputType.NUMBER_DECIMAL)
+      } else if (this.converterKey === 'area') {
         this.InputField('数值', this.areaValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
           this.areaValue = value;
-        }, InputType.Number)
+        }, InputType.NUMBER_DECIMAL)
       } else {
         Text('数值')
           .fontSize(13)
