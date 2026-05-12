@@ -1,10 +1,11 @@
 type CalculatorKey = 'normal' | 'length' | 'volume' | 'time' | 'stopwatch' | 'weight' | 'area' | 'tax' | 'mortgage';
+type CategoryMenuKey = CalculatorKey | 'editor';
 type RepaymentType = 'interest' | 'principal';
 type MortgageLoanType = 'commercial' | 'fund' | 'mixed';
 type HousingRentTier = 'large' | 'medium' | 'small';
 
 interface CalculatorCategory {
-  key: CalculatorKey;
+  key: CategoryMenuKey;
   title: string;
   icon: string;
   desc: string;
@@ -62,7 +63,8 @@ const CATEGORIES: CalculatorCategory[] = [
   { key: 'weight', title: '重量', icon: '⚖️', desc: '克、千克、磅、吨' },
   { key: 'area', title: '面积', icon: '📐', desc: '平方米、公顷、亩' },
   { key: 'tax', title: '个税', icon: '💰', desc: '综合所得估算' },
-  { key: 'mortgage', title: '房贷', icon: '🏠', desc: '等额本息、等额本金' }
+  { key: 'mortgage', title: '房贷', icon: '🏠', desc: '等额本息、等额本金' },
+  { key: 'editor', title: '编辑', icon: '≡', desc: '调整顺序' }
 ];
 
 const LENGTH_UNITS: UnitDefinition[] = [
@@ -827,7 +829,7 @@ struct Index {
     return CATEGORIES[0];
   }
 
-  private getCategoryIndex(key: CalculatorKey): number {
+  private getCategoryIndex(key: CategoryMenuKey): number {
     for (let index: number = 0; index < this.categoryItems.length; index++) {
       if (this.categoryItems[index].key === key) {
         return index;
@@ -849,6 +851,13 @@ struct Index {
 
   private moveCategory(fromIndex: number, toIndex: number): void {
     if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
+      return;
+    }
+    if (this.categoryItems[fromIndex].key === 'editor') {
+      return;
+    }
+    const editorIndex: number = this.getCategoryIndex('editor');
+    if (editorIndex >= 0 && toIndex >= editorIndex) {
       return;
     }
     const nextItems: CalculatorCategory[] = this.categoryItems.slice();
@@ -1206,7 +1215,11 @@ struct Index {
     .height(78)
     .alignItems(HorizontalAlign.Center)
     .onClick((): void => {
-      this.selectCategory(item.key);
+      if (item.key === 'editor') {
+        this.showCategoryEditor = true;
+      } else {
+        this.selectCategory(item.key);
+      }
     })
   }
 
@@ -1238,18 +1251,6 @@ struct Index {
       .scrollable(ScrollDirection.Horizontal)
       .scrollBar(BarState.Off)
       .layoutWeight(1)
-
-      Button('≡')
-        .height(40)
-        .width(40)
-        .fontSize(20)
-        .fontColor('#147C78')
-        .backgroundColor('rgba(0,0,0,0)')
-        .borderRadius(0)
-        .margin({ right: 14, left: 2, top: 6 })
-        .onClick((): void => {
-          this.showCategoryEditor = true;
-        })
     }
     .width('100%')
     .height(172)
@@ -1288,58 +1289,63 @@ struct Index {
         .width('100%')
         .margin({ bottom: 14 })
 
-        Column() {
-          ForEach(this.categoryItems, (item: CalculatorCategory, index: number) => {
-            Row() {
-              Text(item.icon)
-                .fontSize(15)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(Color.White)
-                .width(30)
-                .height(30)
-                .textAlign(TextAlign.Center)
-                .borderRadius(8)
-                .backgroundColor('#147C78')
-              Text(item.title)
-                .fontSize(15)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#182326')
-                .margin({ left: 10 })
-                .layoutWeight(1)
-              Button('上移')
-                .height(34)
-                .width(58)
-                .fontSize(13)
-                .fontColor(index === 0 ? '#9AA7AA' : '#147C78')
-                .backgroundColor(index === 0 ? '#F2F5F5' : '#DFF2F0')
-                .borderRadius(8)
-                .enabled(index > 0)
-                .onClick((): void => {
-                  this.moveCategory(index, index - 1);
-                })
-              Button('下移')
-                .height(34)
-                .width(58)
-                .fontSize(13)
-                .fontColor(index === this.categoryItems.length - 1 ? '#9AA7AA' : '#147C78')
-                .backgroundColor(index === this.categoryItems.length - 1 ? '#F2F5F5' : '#DFF2F0')
-                .borderRadius(8)
-                .margin({ left: 8 })
-                .enabled(index < this.categoryItems.length - 1)
-                .onClick((): void => {
-                  this.moveCategory(index, index + 1);
-                })
-            }
-            .width('100%')
-            .height(50)
-            .padding({ left: 10, right: 10 })
-            .borderRadius(8)
-            .backgroundColor(item.key === this.activeKey ? '#F1FBFA' : '#FFFFFF')
-            .border({ width: 1, color: item.key === this.activeKey ? '#147C78' : '#E4ECEB' })
-            .margin({ bottom: 8 })
-          }, (item: CalculatorCategory): string => item.key)
+        Scroll() {
+          Column() {
+            ForEach(this.categoryItems, (item: CalculatorCategory, index: number) => {
+              Row() {
+                Text(item.icon)
+                  .fontSize(14)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(Color.White)
+                  .width(28)
+                  .height(28)
+                  .textAlign(TextAlign.Center)
+                  .borderRadius(8)
+                  .backgroundColor('#147C78')
+                Text(item.title)
+                  .fontSize(14)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#182326')
+                  .margin({ left: 10 })
+                  .layoutWeight(1)
+                Button('上移')
+                  .height(30)
+                  .width(60)
+                  .fontSize(11)
+                  .fontColor(index === 0 || item.key === 'editor' ? '#9AA7AA' : '#147C78')
+                  .backgroundColor(index === 0 || item.key === 'editor' ? '#EEF2F2' : '#DFF2F0')
+                  .borderRadius(8)
+                  .enabled(index > 0 && item.key !== 'editor')
+                  .onClick((): void => {
+                    this.moveCategory(index, index - 1);
+                  })
+                Button('下移')
+                  .height(30)
+                  .width(60)
+                  .fontSize(11)
+                  .fontColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? '#9AA7AA' : '#147C78')
+                  .backgroundColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? '#EEF2F2' : '#DFF2F0')
+                  .borderRadius(8)
+                  .margin({ left: 6 })
+                  .enabled(index < this.categoryItems.length - 1 && item.key !== 'editor')
+                  .onClick((): void => {
+                    this.moveCategory(index, index + 1);
+                  })
+              }
+              .width('100%')
+              .height(44)
+              .padding({ left: 10, right: 10 })
+              .borderRadius(8)
+              .backgroundColor(item.key === this.activeKey ? '#F1FBFA' : '#FBFDFD')
+              .border({ width: 1, color: item.key === this.activeKey ? '#147C78' : '#E4ECEB' })
+              .margin({ bottom: 6 })
+            }, (item: CalculatorCategory): string => item.key)
+          }
+          .width('100%')
         }
+        .layoutWeight(1)
         .width('100%')
+        .scrollBar(BarState.Auto)
 
         Row() {
           Button('完成')
@@ -1354,18 +1360,20 @@ struct Index {
             })
         }
         .width('100%')
-        .margin({ top: 10 })
+        .margin({ top: 4 })
       }
-      .width('88%')
-      .padding({ left: 18, right: 18, top: 20, bottom: 18 })
-      .borderRadius(18)
-      .backgroundColor(Color.White)
+      .width('82%')
+      .height('62%')
+      .padding({ left: 16, right: 16, top: 18, bottom: 16 })
+      .borderRadius(14)
+      .backgroundColor('#F8FAFA')
+      .border({ width: 1, color: '#DCE5E4' })
       Blank()
     }
     .width('100%')
     .height('100%')
     .padding({ left: 16, right: 16 })
-    .backgroundColor('#00000066')
+    .backgroundColor('rgba(16,39,41,0.38)')
   }
 
   @Builder
