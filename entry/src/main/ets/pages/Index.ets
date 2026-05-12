@@ -330,7 +330,13 @@ struct Index {
   }
 
   private parseNumber(value: string): number {
-    const parsed: number = Number(value);
+    const normalized: string = value
+      .normalize('NFKC')
+      .replace(/,/g, '')
+      .replace(/，/g, '')
+      .replace(/。/g, '.')
+      .replace(/\s+/g, '');
+    const parsed: number = Number(normalized);
     if (Number.isFinite(parsed)) {
       return parsed;
     }
@@ -1804,51 +1810,6 @@ struct Index {
     this.housingRentAmount = this.getHousingRentAmountByTier(tier);
   }
 
-  @Builder
-  HousingRentTierToggle() {
-    Column() {
-      Text('城市档位')
-        .fontSize(13)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
-        .margin({ bottom: 7 })
-      Row() {
-        Button('一线 1500')
-          .height(36)
-          .layoutWeight(1)
-          .fontSize(13)
-          .fontColor(this.housingRentTier === 'large' ? Color.White : '#147C78')
-          .backgroundColor(this.housingRentTier === 'large' ? '#147C78' : '#DFF2F0')
-          .margin({ right: 4 })
-          .onClick((): void => {
-            this.setHousingRentTier('large');
-          })
-        Button('二线 1100')
-          .height(36)
-          .layoutWeight(1)
-          .fontSize(13)
-          .fontColor(this.housingRentTier === 'medium' ? Color.White : '#147C78')
-          .backgroundColor(this.housingRentTier === 'medium' ? '#147C78' : '#DFF2F0')
-          .margin({ left: 4, right: 4 })
-          .onClick((): void => {
-            this.setHousingRentTier('medium');
-          })
-        Button('其他 800')
-          .height(36)
-          .layoutWeight(1)
-          .fontSize(13)
-          .fontColor(this.housingRentTier === 'small' ? Color.White : '#147C78')
-          .backgroundColor(this.housingRentTier === 'small' ? '#147C78' : '#DFF2F0')
-          .margin({ left: 4 })
-          .onClick((): void => {
-            this.setHousingRentTier('small');
-          })
-      }
-      .width('100%')
-      .margin({ bottom: 10 })
-    }
-    .width('100%')
-  }
 
   @Builder
   DeductionItemCard(item: DeductionItem) {
@@ -1885,10 +1846,7 @@ struct Index {
 
       this.InputField(this.getDeductionAmountLabel(item.key), this.getDeductionAmount(item.key), '请输入扣除额', (value: string): void => {
         this.setDeductionAmount(item.key, value);
-      })
-      if (item.key === 'housingRent') {
-        this.HousingRentTierToggle()
-      }
+      }, InputType.NUMBER_DECIMAL)
     }
     .width('100%')
     .padding(12)
@@ -2109,31 +2067,31 @@ struct Index {
         .margin({ bottom: 16 })
       this.InputField('月收入（元）', this.monthlyIncome, '请输入月收入', (value: string): void => {
         this.monthlyIncome = value;
-      })
+      }, InputType.NUMBER_DECIMAL)
       this.InputField('起征点（元/月）', this.monthlyBasicDeduction, '请输入起征点', (value: string): void => {
         this.monthlyBasicDeduction = value;
-      })
+      }, InputType.NUMBER_DECIMAL)
 
       this.SocialSecurityModeToggle()
       if (this.socialSecurityMode === 'rate') {
         this.InputField('社保比例（%）', this.socialSecurityRate, '请输入社保比例', (value: string): void => {
           this.socialSecurityRate = value;
-        })
+        }, InputType.NUMBER_DECIMAL)
       } else {
         this.InputField('社保固定额（元/月）', this.socialSecurityFixed, '请输入社保固定额', (value: string): void => {
           this.socialSecurityFixed = value;
-        })
+        }, InputType.NUMBER_DECIMAL)
       }
 
       this.HousingFundModeToggle()
       if (this.housingFundMode === 'rate') {
         this.InputField('公积金比例（%）', this.housingFundRate, '请输入公积金比例', (value: string): void => {
           this.housingFundRate = value;
-        })
+        }, InputType.NUMBER_DECIMAL)
       } else {
         this.InputField('公积金固定额（元/月）', this.housingFundFixed, '请输入公积金固定额', (value: string): void => {
           this.housingFundFixed = value;
-        })
+        }, InputType.NUMBER_DECIMAL)
       }
 
       Text('专项附加扣除')
