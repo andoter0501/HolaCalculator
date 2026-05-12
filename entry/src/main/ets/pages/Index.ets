@@ -400,6 +400,18 @@ struct Index {
     return this.getConversionTextByState(this.converterKey, this.getConverterInputValue(), this.fromUnitName, this.toUnitName);
   }
 
+  private getCurrentConversionResultValue(): string {
+    if (this.getConverterInputValue().trim() === '') {
+      return '';
+    }
+    const config: ConverterConfig = this.getConverterConfig();
+    return this.formatNumber(this.getConversionValue(), config.precision);
+  }
+
+  private getCurrentConversionResultUnit(): string {
+    return this.toUnitName;
+  }
+
   private getConverterInputValue(): string {
     if (this.converterKey === 'length') {
       return this.lengthValue;
@@ -425,6 +437,28 @@ struct Index {
     this.timeValue = '';
     this.weightValue = '';
     this.areaValue = '';
+  }
+
+  private setConverterInputValueByKey(value: string): void {
+    if (this.converterKey === 'length') {
+      this.lengthValue = value;
+      return;
+    }
+    if (this.converterKey === 'volume') {
+      this.volumeValue = value;
+      return;
+    }
+    if (this.converterKey === 'time') {
+      this.timeValue = value;
+      return;
+    }
+    if (this.converterKey === 'weight') {
+      this.weightValue = value;
+      return;
+    }
+    if (this.converterKey === 'area') {
+      this.areaValue = value;
+    }
   }
 
   private setFromUnitName(unitName: string): void {
@@ -471,6 +505,17 @@ struct Index {
   private selectToUnitName(unitName: string): void {
     this.setToUnitName(unitName);
     this.showToUnitPicker = false;
+  }
+
+  private swapConverterUnits(): void {
+    const nextFromName: string = this.toUnitName;
+    const nextToName: string = this.fromUnitName;
+    const nextFromIndex: number = this.toIndex;
+    const nextToIndex: number = this.fromIndex;
+    this.fromUnitName = nextFromName;
+    this.toUnitName = nextToName;
+    this.fromIndex = nextFromIndex;
+    this.toIndex = nextToIndex;
   }
 
   private resetConverterIndexes(key: CalculatorKey): void {
@@ -1854,66 +1899,103 @@ struct Index {
   }
 
   @Builder
-  UnitSelector(label: string, target: 'from' | 'to') {
+  ConverterInputRow() {
     Column() {
-      Text(label)
+      Text('金额')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
         .fontColor('#415155')
-        .margin({ bottom: 7 })
+        .margin({ bottom: 8 })
       Row() {
-        Text(target === 'from' ? this.fromUnitName : this.toUnitName)
-          .height(44)
-          .width('100%')
-          .fontSize(15)
+        TextInput({ text: this.getConverterInputValue(), placeholder: this.getConverterConfig().valuePlaceholder })
+          .layoutWeight(1)
+          .height(64)
+          .fontSize(30)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
-          .textAlign(TextAlign.Center)
-          .backgroundColor('#FBFDFD')
-          .borderRadius(8)
-          .border({ width: 1, color: '#DCE5E4' })
-          .onClick((): void => {
-            this.openUnitPicker(target);
+          .fontColor('#111111')
+          .backgroundColor('rgba(0,0,0,0)')
+          .padding({ left: 0, right: 6 })
+          .type(InputType.NUMBER_DECIMAL)
+          .onChange((nextValue: string): void => {
+            this.setConverterInputValueByKey(nextValue);
           })
-        Text('▾')
-          .height(44)
-          .width(34)
-          .fontSize(16)
-          .fontColor('#147C78')
-          .textAlign(TextAlign.Center)
-          .margin({ left: -34 })
-          .onClick((): void => {
-            this.openUnitPicker(target);
-          })
+        Row() {
+          Text(this.fromUnitName)
+            .fontSize(22)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#4A4A4A')
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+          Text('▾')
+            .fontSize(16)
+            .fontColor('#858585')
+            .margin({ left: 5, top: 2 })
+        }
+        .height(48)
+        .padding({ left: 10, right: 8 })
+        .backgroundColor('#F0F0F0')
+        .borderRadius(10)
+        .onClick((): void => {
+          this.openUnitPicker('from');
+        })
       }
       .width('100%')
+      .height(78)
+      .padding({ left: 14, right: 14 })
+      .borderRadius(16)
+      .border({ width: 1.5, color: '#8F8F8F' })
+      .backgroundColor('#F7F7F7')
     }
     .width('100%')
   }
 
   @Builder
-  ConverterResultCard() {
+  ConverterResultRow() {
     Column() {
-      Text('换算结果')
+      Text('换算为')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('rgba(255,255,255,0.72)')
-      Text(this.getCurrentConversionText())
-        .fontSize(34)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(Color.White)
-        .width('100%')
-        .margin({ top: 10, bottom: 8 })
-      Text(`${this.fromUnitName} → ${this.toUnitName}`)
-        .fontSize(13)
-        .fontColor('rgba(255,255,255,0.68)')
-        .lineHeight(19)
+        .fontColor('#415155')
+        .margin({ bottom: 8 })
+      Row() {
+        Text(this.getCurrentConversionResultValue())
+          .layoutWeight(1)
+          .height(64)
+          .fontSize(30)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#111111')
+          .textAlign(TextAlign.Start)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .maxLines(1)
+          .padding({ right: 6 })
+        Row() {
+          Text(this.getCurrentConversionResultUnit())
+            .fontSize(22)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#4A4A4A')
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+          Text('▾')
+            .fontSize(16)
+            .fontColor('#858585')
+            .margin({ left: 5, top: 2 })
+        }
+        .height(48)
+        .padding({ left: 10, right: 8 })
+        .backgroundColor('#F0F0F0')
+        .borderRadius(10)
+        .onClick((): void => {
+          this.openUnitPicker('to');
+        })
+      }
+      .width('100%')
+      .height(78)
+      .padding({ left: 14, right: 14 })
+      .borderRadius(16)
+      .border({ width: 1.5, color: '#8F8F8F' })
+      .backgroundColor('#F7F7F7')
     }
     .width('100%')
-    .padding(18)
-    .borderRadius(8)
-    .backgroundColor('#102729')
-    .margin({ top: 18 })
   }
 
   @Builder
@@ -1928,52 +2010,23 @@ struct Index {
         .fontSize(14)
         .fontColor('#667579')
         .lineHeight(21)
-        .margin({ bottom: 16 })
-      if (this.converterKey === 'length') {
-        this.InputField('数值', this.lengthValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
-          this.lengthValue = value;
-        }, InputType.NUMBER_DECIMAL)
-      } else if (this.converterKey === 'volume') {
-        this.InputField('数值', this.volumeValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
-          this.volumeValue = value;
-        }, InputType.NUMBER_DECIMAL)
-      } else if (this.converterKey === 'time') {
-        this.InputField('数值', this.timeValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
-          this.timeValue = value;
-        }, InputType.NUMBER_DECIMAL)
-      } else if (this.converterKey === 'weight') {
-        this.InputField('数值', this.weightValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
-          this.weightValue = value;
-        }, InputType.NUMBER_DECIMAL)
-      } else if (this.converterKey === 'area') {
-        this.InputField('数值', this.areaValue, this.getConverterConfig().valuePlaceholder, (value: string): void => {
-          this.areaValue = value;
-        }, InputType.NUMBER_DECIMAL)
-      } else {
-        Text('数值')
-          .fontSize(13)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#415155')
-          .margin({ bottom: 7 })
-        TextInput({ text: '', placeholder: this.getConverterConfig().valuePlaceholder })
-          .height(44)
-      }
-      Row() {
-        Column() {
-          this.UnitSelector('从', 'from')
-        }
-        .layoutWeight(1)
-        .margin({ right: 6 })
-        Column() {
-          this.UnitSelector('到', 'to')
-        }
-        .layoutWeight(1)
-        .margin({ left: 6 })
-      }
-      .width('100%')
-      .margin({ top: 14 })
+        .margin({ bottom: 14 })
+      this.ConverterInputRow()
 
-      this.ConverterResultCard()
+      Button('⇅')
+        .width(54)
+        .height(54)
+        .fontSize(28)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#111111')
+        .backgroundColor('#96E25E')
+        .borderRadius(27)
+        .margin({ top: 14, bottom: 14 })
+        .onClick((): void => {
+          this.swapConverterUnits();
+        })
+
+      this.ConverterResultRow()
     }
     .width('100%')
   }
