@@ -1,6 +1,7 @@
 type CalculatorKey = 'length' | 'volume' | 'time' | 'stopwatch' | 'weight' | 'area' | 'tax' | 'mortgage';
 type RepaymentType = 'interest' | 'principal';
 type MortgageLoanType = 'commercial' | 'fund' | 'mixed';
+type HousingRentTier = 'large' | 'medium' | 'small';
 
 interface CalculatorCategory {
   key: CalculatorKey;
@@ -189,7 +190,7 @@ struct Index {
   @State stopwatchRunning: boolean = false;
   @State lapItems: string[] = [];
   @State monthlyIncome: string = '';
-  @State monthlyBasicDeduction: string = '';
+  @State monthlyBasicDeduction: string = '5000';
   @State socialSecurityMode: 'rate' | 'fixed' = 'rate';
   @State housingFundMode: 'rate' | 'fixed' = 'rate';
   @State socialSecurityRate: string = '';
@@ -197,19 +198,20 @@ struct Index {
   @State socialSecurityFixed: string = '';
   @State housingFundFixed: string = '';
   @State childEducationEnabled: boolean = false;
-  @State childEducationAmount: string = '';
+  @State childEducationAmount: string = '2000';
   @State continuingEducationEnabled: boolean = false;
-  @State continuingEducationAmount: string = '';
+  @State continuingEducationAmount: string = '400';
   @State seriousIllnessEnabled: boolean = false;
-  @State seriousIllnessAmount: string = '';
+  @State seriousIllnessAmount: string = '0';
   @State mortgageInterestEnabled: boolean = false;
-  @State mortgageInterestAmount: string = '';
+  @State mortgageInterestAmount: string = '1000';
   @State housingRentEnabled: boolean = false;
-  @State housingRentAmount: string = '';
+  @State housingRentAmount: string = '1500';
+  @State housingRentTier: HousingRentTier = 'large';
   @State elderSupportEnabled: boolean = false;
-  @State elderSupportAmount: string = '';
+  @State elderSupportAmount: string = '3000';
   @State childCareEnabled: boolean = false;
-  @State childCareAmount: string = '';
+  @State childCareAmount: string = '2000';
   @State mortgageLoanType: MortgageLoanType = 'commercial';
   @State commercialLoanAmount: string = '';
   @State commercialLoanYears: string = '';
@@ -1480,9 +1482,9 @@ struct Index {
         .fontWeight(FontWeight.Bold)
         .fontColor('#182326')
         .margin({ bottom: 10 })
-      this.InputField('贷款金额（万元）', amount, '请输入贷款金额', onAmountChange, InputType.Number)
+      this.InputField('贷款金额（万元）', amount, '请输入贷款金额', onAmountChange, InputType.NUMBER_DECIMAL)
       this.InputField('贷款年限（年）', years, '请输入贷款年限', onYearsChange, InputType.Number)
-      this.InputField('年利率（%）', rate, '请输入年利率', onRateChange, InputType.Number)
+      this.InputField('年利率（%）', rate, '请输入年利率', onRateChange, InputType.NUMBER_DECIMAL)
     }
     .width('100%')
     .padding({ left: 12, right: 12, top: 12, bottom: 2 })
@@ -1738,6 +1740,67 @@ struct Index {
     return '扣除金额（元/月）';
   }
 
+  private getHousingRentAmountByTier(tier: HousingRentTier): string {
+    if (tier === 'large') {
+      return '1500';
+    }
+    if (tier === 'medium') {
+      return '1100';
+    }
+    return '800';
+  }
+
+  private setHousingRentTier(tier: HousingRentTier): void {
+    this.housingRentTier = tier;
+    this.housingRentAmount = this.getHousingRentAmountByTier(tier);
+  }
+
+  @Builder
+  HousingRentTierToggle() {
+    Column() {
+      Text('城市档位')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#415155')
+        .margin({ bottom: 7 })
+      Row() {
+        Button('一线 1500')
+          .height(36)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.housingRentTier === 'large' ? Color.White : '#147C78')
+          .backgroundColor(this.housingRentTier === 'large' ? '#147C78' : '#DFF2F0')
+          .margin({ right: 4 })
+          .onClick((): void => {
+            this.setHousingRentTier('large');
+          })
+        Button('二线 1100')
+          .height(36)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.housingRentTier === 'medium' ? Color.White : '#147C78')
+          .backgroundColor(this.housingRentTier === 'medium' ? '#147C78' : '#DFF2F0')
+          .margin({ left: 4, right: 4 })
+          .onClick((): void => {
+            this.setHousingRentTier('medium');
+          })
+        Button('其他 800')
+          .height(36)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.housingRentTier === 'small' ? Color.White : '#147C78')
+          .backgroundColor(this.housingRentTier === 'small' ? '#147C78' : '#DFF2F0')
+          .margin({ left: 4 })
+          .onClick((): void => {
+            this.setHousingRentTier('small');
+          })
+      }
+      .width('100%')
+      .margin({ bottom: 10 })
+    }
+    .width('100%')
+  }
+
   @Builder
   DeductionItemCard(item: DeductionItem) {
     Column() {
@@ -1774,6 +1837,9 @@ struct Index {
       this.InputField(this.getDeductionAmountLabel(item.key), this.getDeductionAmount(item.key), '请输入扣除额', (value: string): void => {
         this.setDeductionAmount(item.key, value);
       })
+      if (item.key === 'housingRent') {
+        this.HousingRentTierToggle()
+      }
     }
     .width('100%')
     .padding(12)
