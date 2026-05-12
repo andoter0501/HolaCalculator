@@ -1381,6 +1381,104 @@ struct Index {
   }
 
   @Builder
+  TaxMetricList() {
+    Column() {
+      Row() {
+        Text('应纳税所得额')
+          .fontSize(14)
+          .fontColor('#667579')
+        Text(this.formatMoney(this.getTaxableIncome()))
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.End)
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .padding({ top: 12, bottom: 12 })
+      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+
+      Row() {
+        Text('年度起征扣除')
+          .fontSize(14)
+          .fontColor('#667579')
+        Text(this.formatMoney(this.parseNumber(this.monthlyBasicDeduction) * 12))
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.End)
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .padding({ top: 12, bottom: 12 })
+      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+
+      Row() {
+        Text('社保年度扣除')
+          .fontSize(14)
+          .fontColor('#667579')
+        Text(this.formatMoney(this.getAnnualSocialSecurityDeduction()))
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.End)
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .padding({ top: 12, bottom: 12 })
+      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+
+      Row() {
+        Text('公积金年度扣除')
+          .fontSize(14)
+          .fontColor('#667579')
+        Text(this.formatMoney(this.getAnnualHousingFundDeduction()))
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.End)
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .padding({ top: 12, bottom: 12 })
+      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+
+      Row() {
+        Text('专项附加扣除')
+          .fontSize(14)
+          .fontColor('#667579')
+        Text(this.formatMoney(this.getAnnualSpecialDeduction()))
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.End)
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .padding({ top: 12, bottom: 12 })
+      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+
+      Row() {
+        Text('税后总收入')
+          .fontSize(14)
+          .fontColor('#667579')
+        Text(this.formatMoney(this.parseNumber(this.monthlyIncome) * 12 - this.getAnnualSocialSecurityDeduction() -
+          this.getAnnualHousingFundDeduction() - this.getTaxDue()))
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .textAlign(TextAlign.End)
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .padding({ top: 12, bottom: 12 })
+      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
   TaxResultCard() {
     Column() {
       Text('年度应纳税额')
@@ -2104,7 +2202,7 @@ struct Index {
       }, (item: DeductionItem): string => item.key)
 
       this.TaxResultCard()
-      this.MetricList(this.getTaxMetrics())
+      this.TaxMetricList()
       this.MonthlyTaxTable()
     }
     .width('100%')
