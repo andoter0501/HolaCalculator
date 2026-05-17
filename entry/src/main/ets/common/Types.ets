@@ -3,6 +3,7 @@ export type CategoryMenuKey = CalculatorKey | 'editor';
 export type RepaymentType = 'interest' | 'principal';
 export type MortgageLoanType = 'commercial' | 'fund' | 'mixed';
 export type HousingRentTier = 'large' | 'medium' | 'small';
+export type LaborIncomeMode = 'fixed' | 'monthly' | 'total';
 
 export interface CalculatorCategory {
   key: CategoryMenuKey;

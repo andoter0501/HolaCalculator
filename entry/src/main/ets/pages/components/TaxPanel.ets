@@ -1,11 +1,14 @@
-import { CalculatorKey, DeductionItem, HousingRentTier, TaxDeductionState } from '../../common/Types';
+import { DeductionItem, HousingRentTier, LaborIncomeMode, TaxDeductionState } from '../../common/Types';
 import { DEDUCTION_ITEMS, TAX_MONTHS } from '../../common/Constants';
 import { formatMoney, parseNumber } from '../../common/Utils';
 import {
   getAnnualHousingFundDeduction,
+  getAnnualLaborTaxFromAmounts,
   getAnnualSocialSecurityDeduction,
   getAnnualSpecialDeduction,
+  getAnnualSettlement,
   getMonthlyHousingFund,
+  getMonthlyLaborTax,
   getMonthlyNetIncome,
   getMonthlySocialSecurity,
   getMonthlyTax,
@@ -15,7 +18,11 @@ import {
 
 @Component
 export struct TaxPanel {
+  @Link incomeType: string;
   @Link monthlyIncome: string;
+  @Link monthlyLaborIncome: string;
+  @Link laborIncomeMode: LaborIncomeMode;
+  @Link monthlyLaborAmounts: string[];
   @Link monthlyBasicDeduction: string;
   @Link socialSecurityMode: string;
   @Link housingFundMode: string;
@@ -74,6 +81,104 @@ export struct TaxPanel {
   private setHousingRentTier(tier: HousingRentTier): void {
     this.housingRentTier = tier;
     this.setDeductionAmount('housingRent', this.getHousingRentAmountByTier(tier));
+  }
+
+  private setMonthlyLaborAmount(index: number, value: string): void {
+    const next: string[] = this.monthlyLaborAmounts.slice();
+    next[index] = value;
+    this.monthlyLaborAmounts = next;
+  }
+
+  @Builder
+  IncomeTypeToggle() {
+    Column() {
+      Text('收入类型')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#415155')
+        .margin({ bottom: 7 })
+      Row() {
+        Button('仅工资')
+          .height(38)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.incomeType === 'salary' ? Color.White : '#147C78')
+          .backgroundColor(this.incomeType === 'salary' ? '#147C78' : '#DFF2F0')
+          .margin({ right: 4 })
+          .onClick((): void => {
+            this.incomeType = 'salary';
+          })
+        Button('仅劳务')
+          .height(38)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.incomeType === 'labor' ? Color.White : '#147C78')
+          .backgroundColor(this.incomeType === 'labor' ? '#147C78' : '#DFF2F0')
+          .margin({ left: 4, right: 4 })
+          .onClick((): void => {
+            this.incomeType = 'labor';
+          })
+        Button('工资+劳务')
+          .height(38)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.incomeType === 'both' ? Color.White : '#147C78')
+          .backgroundColor(this.incomeType === 'both' ? '#147C78' : '#DFF2F0')
+          .margin({ left: 4 })
+          .onClick((): void => {
+            this.incomeType = 'both';
+          })
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
+  LaborIncomeModeToggle() {
+    Column() {
+      Text('劳务报酬计税方式')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#415155')
+        .margin({ bottom: 7 })
+      Row() {
+        Button('按月固定')
+          .height(38)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.laborIncomeMode === 'fixed' ? Color.White : '#147C78')
+          .backgroundColor(this.laborIncomeMode === 'fixed' ? '#147C78' : '#DFF2F0')
+          .margin({ right: 4 })
+          .onClick((): void => {
+            this.laborIncomeMode = 'fixed';
+          })
+        Button('按月分别')
+          .height(38)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.laborIncomeMode === 'monthly' ? Color.White : '#147C78')
+          .backgroundColor(this.laborIncomeMode === 'monthly' ? '#147C78' : '#DFF2F0')
+          .margin({ left: 4, right: 4 })
+          .onClick((): void => {
+            this.laborIncomeMode = 'monthly';
+          })
+        Button('按总额')
+          .height(38)
+          .layoutWeight(1)
+          .fontSize(13)
+          .fontColor(this.laborIncomeMode === 'total' ? Color.White : '#147C78')
+          .backgroundColor(this.laborIncomeMode === 'total' ? '#147C78' : '#DFF2F0')
+          .margin({ left: 4 })
+          .onClick((): void => {
+            this.laborIncomeMode = 'total';
+          })
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
   }
 
   @Builder
@@ -177,6 +282,43 @@ export struct TaxPanel {
   }
 
   @Builder
+  MonthlyLaborInputGrid() {
+    Column() {
+      Text('各月劳务报酬（元）')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#415155')
+        .margin({ bottom: 7 })
+      Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
+        ForEach(TAX_MONTHS, (month: number) => {
+          Column() {
+            Text(`${month}月`)
+              .fontSize(12)
+              .fontColor('#667579')
+              .margin({ bottom: 4 })
+            TextInput({ text: this.monthlyLaborAmounts[month - 1], placeholder: '元' })
+              .height(40)
+              .fontSize(14)
+              .backgroundColor('#FBFDFD')
+              .borderRadius(8)
+              .border({ width: 1, color: '#DCE5E4' })
+              .padding({ left: 8, right: 8 })
+              .type(InputType.NUMBER_DECIMAL)
+              .onChange((value: string): void => {
+                this.setMonthlyLaborAmount(month - 1, value);
+              })
+          }
+          .width('48%')
+          .margin({ bottom: 10 })
+        }, (month: number): string => `month_${month}`)
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
   DeductionItemCard(item: DeductionItem) {
     Column() {
       Row() {
@@ -222,20 +364,119 @@ export struct TaxPanel {
   }
 
   @Builder
-  TaxResultCard() {
+  LaborTaxCard() {
     Column() {
-      Text('年度应纳税额')
+      Text(this.laborIncomeMode === 'monthly' ? '劳务报酬平均月度预扣税' : '劳务报酬月度预扣税')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
         .fontColor('rgba(255,255,255,0.72)')
-      Text(formatMoney(getTaxDue(this.monthlyIncome, this.monthlyBasicDeduction,
-        this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
-        this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
+      Text(formatMoney(
+        this.laborIncomeMode === 'monthly'
+          ? getAnnualLaborTaxFromAmounts(this.monthlyLaborAmounts) / 12
+          : getMonthlyLaborTax(
+              this.laborIncomeMode === 'total'
+                ? String(parseNumber(this.monthlyLaborIncome) / 12)
+                : this.monthlyLaborIncome
+            )))
         .fontSize(34)
         .fontWeight(FontWeight.Bold)
         .fontColor(Color.White)
         .width('100%')
         .margin({ top: 10, bottom: 8 })
+      Text('≤800免税；800~4000按(收入-800)×20%；>4000按收入×80%×税率（20%/30%/40%）')
+        .fontSize(13)
+        .fontColor('rgba(255,255,255,0.68)')
+        .lineHeight(19)
+    }
+    .width('100%')
+    .padding(18)
+    .borderRadius(8)
+    .backgroundColor('#1A3A3C')
+    .margin({ top: 18 })
+  }
+
+  @Builder
+  SettlementCard() {
+    Column() {
+      Text('年度汇算清缴')
+        .fontSize(13)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('rgba(255,255,255,0.72)')
+
+      Text(formatMoney(getAnnualSettlement(this.monthlyIncome, this.monthlyLaborIncome, this.monthlyBasicDeduction,
+        this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
+        this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions,
+        this.laborIncomeMode, this.monthlyLaborAmounts).settlement))
+        .fontSize(34)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(Color.White)
+        .width('100%')
+        .margin({ top: 10, bottom: 8 })
+
+      Text(getAnnualSettlement(this.monthlyIncome, this.monthlyLaborIncome, this.monthlyBasicDeduction,
+        this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
+        this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions,
+        this.laborIncomeMode, this.monthlyLaborAmounts).settlement >= 0 ? '需补税' : '可退税')
+        .fontSize(13)
+        .fontColor('rgba(255,255,255,0.68)')
+        .lineHeight(19)
+    }
+    .width('100%')
+    .padding(18)
+    .borderRadius(8)
+    .backgroundColor('#0D2B2D')
+    .margin({ top: 18 })
+  }
+
+  @Builder
+  TaxResultCard() {
+    Column() {
+      if (this.incomeType === 'salary') {
+        Text('年度工资应纳税额')
+          .fontSize(13)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('rgba(255,255,255,0.72)')
+        Text(formatMoney(getTaxDue(this.monthlyIncome, this.monthlyBasicDeduction,
+          this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
+          this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
+          .fontSize(34)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Color.White)
+          .width('100%')
+          .margin({ top: 10, bottom: 8 })
+      } else if (this.incomeType === 'labor') {
+        Text('年度劳务应纳税额')
+          .fontSize(13)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('rgba(255,255,255,0.72)')
+        Text(formatMoney(
+          this.laborIncomeMode === 'monthly'
+            ? getAnnualLaborTaxFromAmounts(this.monthlyLaborAmounts)
+            : getMonthlyLaborTax(
+                this.laborIncomeMode === 'total'
+                  ? String(parseNumber(this.monthlyLaborIncome) / 12)
+                  : this.monthlyLaborIncome
+              ) * 12))
+          .fontSize(34)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Color.White)
+          .width('100%')
+          .margin({ top: 10, bottom: 8 })
+      } else {
+        Text('年度综合应纳税额')
+          .fontSize(13)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('rgba(255,255,255,0.72)')
+        Text(formatMoney(getAnnualSettlement(this.monthlyIncome, this.monthlyLaborIncome, this.monthlyBasicDeduction,
+          this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
+          this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions,
+          this.laborIncomeMode, this.monthlyLaborAmounts).totalTax))
+          .fontSize(34)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Color.White)
+          .width('100%')
+          .margin({ top: 10, bottom: 8 })
+      }
       Text('估算结果仅供参考，未覆盖城市社保、公积金差异。')
         .fontSize(13)
         .fontColor('rgba(255,255,255,0.68)')
@@ -251,103 +492,116 @@ export struct TaxPanel {
   @Builder
   TaxMetricList() {
     Column() {
-      Row() {
-        Text('应纳税所得额')
-          .fontSize(14)
-          .fontColor('#667579')
-        Text(formatMoney(getTaxableIncome(this.monthlyIncome, this.monthlyBasicDeduction,
-          this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
-          this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
-          .fontSize(15)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
-          .textAlign(TextAlign.End)
-      }
-      .justifyContent(FlexAlign.SpaceBetween)
-      .width('100%')
-      .padding({ top: 12, bottom: 12 })
-      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
-
-      Row() {
-        Text('年度起征扣除')
-          .fontSize(14)
-          .fontColor('#667579')
-        Text(formatMoney(parseNumber(this.monthlyBasicDeduction) * 12))
-          .fontSize(15)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
-          .textAlign(TextAlign.End)
-      }
-      .justifyContent(FlexAlign.SpaceBetween)
-      .width('100%')
-      .padding({ top: 12, bottom: 12 })
-      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
-
-      Row() {
-        Text('社保年度扣除')
-          .fontSize(14)
-          .fontColor('#667579')
-        Text(formatMoney(getAnnualSocialSecurityDeduction(this.monthlyIncome,
-          this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed)))
-          .fontSize(15)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
-          .textAlign(TextAlign.End)
-      }
-      .justifyContent(FlexAlign.SpaceBetween)
-      .width('100%')
-      .padding({ top: 12, bottom: 12 })
-      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
-
-      Row() {
-        Text('公积金年度扣除')
-          .fontSize(14)
-          .fontColor('#667579')
-        Text(formatMoney(getAnnualHousingFundDeduction(this.monthlyIncome,
-          this.housingFundMode, this.housingFundRate, this.housingFundFixed)))
-          .fontSize(15)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
-          .textAlign(TextAlign.End)
-      }
-      .justifyContent(FlexAlign.SpaceBetween)
-      .width('100%')
-      .padding({ top: 12, bottom: 12 })
-      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
-
-      Row() {
-        Text('专项附加扣除')
-          .fontSize(14)
-          .fontColor('#667579')
-        Text(formatMoney(getAnnualSpecialDeduction(this.deductions)))
-          .fontSize(15)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
-          .textAlign(TextAlign.End)
-      }
-      .justifyContent(FlexAlign.SpaceBetween)
-      .width('100%')
-      .padding({ top: 12, bottom: 12 })
-      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
-
-      Row() {
-        Text('税后总收入')
-          .fontSize(14)
-          .fontColor('#667579')
-        Text(formatMoney(parseNumber(this.monthlyIncome) * 12 -
-          getAnnualSocialSecurityDeduction(this.monthlyIncome, this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed) -
-          getAnnualHousingFundDeduction(this.monthlyIncome, this.housingFundMode, this.housingFundRate, this.housingFundFixed) -
-          getTaxDue(this.monthlyIncome, this.monthlyBasicDeduction, this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
+      if (this.incomeType === 'salary' || this.incomeType === 'both') {
+        Row() {
+          Text('工资应纳税所得额')
+            .fontSize(14)
+            .fontColor('#667579')
+          Text(formatMoney(getTaxableIncome(this.monthlyIncome, this.monthlyBasicDeduction,
+            this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
             this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
-          .fontSize(15)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
-          .textAlign(TextAlign.End)
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
+        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
       }
-      .justifyContent(FlexAlign.SpaceBetween)
-      .width('100%')
-      .padding({ top: 12, bottom: 12 })
-      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+
+      if (this.incomeType === 'salary' || this.incomeType === 'both') {
+        Row() {
+          Text('年度起征扣除')
+            .fontSize(14)
+            .fontColor('#667579')
+          Text(formatMoney(parseNumber(this.monthlyBasicDeduction) * 12))
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
+        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+      }
+
+      if (this.incomeType === 'salary' || this.incomeType === 'both') {
+        Row() {
+          Text('社保年度扣除')
+            .fontSize(14)
+            .fontColor('#667579')
+          Text(formatMoney(getAnnualSocialSecurityDeduction(this.monthlyIncome,
+            this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed)))
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
+        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+
+        Row() {
+          Text('公积金年度扣除')
+            .fontSize(14)
+            .fontColor('#667579')
+          Text(formatMoney(getAnnualHousingFundDeduction(this.monthlyIncome,
+            this.housingFundMode, this.housingFundRate, this.housingFundFixed)))
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
+        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+      }
+
+      if (this.incomeType === 'salary' || this.incomeType === 'both') {
+        Row() {
+          Text('专项附加扣除')
+            .fontSize(14)
+            .fontColor('#667579')
+          Text(formatMoney(getAnnualSpecialDeduction(this.deductions)))
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
+        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+      }
+
+      if (this.incomeType === 'labor' || this.incomeType === 'both') {
+        Row() {
+          Text('劳务年度预扣税')
+            .fontSize(14)
+            .fontColor('#667579')
+          Text(formatMoney(
+            this.laborIncomeMode === 'monthly'
+              ? getAnnualLaborTaxFromAmounts(this.monthlyLaborAmounts)
+              : getMonthlyLaborTax(
+                  this.laborIncomeMode === 'total'
+                    ? String(parseNumber(this.monthlyLaborIncome) / 12)
+                    : this.monthlyLaborIncome
+                ) * 12))
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#182326')
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
+        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+      }
     }
     .width('100%')
     .margin({ bottom: 12 })
@@ -367,13 +621,23 @@ export struct TaxPanel {
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
           .fontColor('#415155')
-        Text('扣税')
-          .layoutWeight(1)
-          .fontSize(13)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#415155')
-          .textAlign(TextAlign.End)
-        Text('到手工资')
+        if (this.incomeType === 'salary' || this.incomeType === 'both') {
+          Text('工资税')
+            .layoutWeight(1)
+            .fontSize(13)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#415155')
+            .textAlign(TextAlign.End)
+        }
+        if (this.incomeType === 'labor' || this.incomeType === 'both') {
+          Text('劳务税')
+            .layoutWeight(1)
+            .fontSize(13)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#415155')
+            .textAlign(TextAlign.End)
+        }
+        Text('到手')
           .layoutWeight(1)
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
@@ -392,17 +656,45 @@ export struct TaxPanel {
               .layoutWeight(1)
               .fontSize(13)
               .fontColor('#667579')
-            Text(formatMoney(getMonthlyTax(month, this.monthlyIncome, this.monthlyBasicDeduction,
-              this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
-              this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
-              .layoutWeight(1)
-              .fontSize(13)
-              .fontColor('#182326')
-              .textAlign(TextAlign.End)
-            Text(formatMoney(getMonthlyNetIncome(month, this.monthlyIncome,
-              this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
-              this.housingFundMode, this.housingFundRate, this.housingFundFixed,
-              this.monthlyBasicDeduction, this.deductions)))
+            if (this.incomeType === 'salary' || this.incomeType === 'both') {
+              Text(formatMoney(getMonthlyTax(month, this.monthlyIncome, this.monthlyBasicDeduction,
+                this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
+                this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
+                .layoutWeight(1)
+                .fontSize(13)
+                .fontColor('#182326')
+                .textAlign(TextAlign.End)
+            }
+            if (this.incomeType === 'labor' || this.incomeType === 'both') {
+              Text(formatMoney(
+                this.laborIncomeMode === 'monthly'
+                  ? getMonthlyLaborTax(this.monthlyLaborAmounts[month - 1])
+                  : getMonthlyLaborTax(
+                      this.laborIncomeMode === 'total'
+                        ? String(parseNumber(this.monthlyLaborIncome) / 12)
+                        : this.monthlyLaborIncome
+                    )))
+                .layoutWeight(1)
+                .fontSize(13)
+                .fontColor('#182326')
+                .textAlign(TextAlign.End)
+            }
+            Text(formatMoney(
+              this.incomeType === 'salary' ?
+                getMonthlyNetIncome(month, this.monthlyIncome, this.socialSecurityMode, this.socialSecurityRate,
+                  this.socialSecurityFixed, this.housingFundMode, this.housingFundRate, this.housingFundFixed,
+                  this.monthlyBasicDeduction, this.deductions) :
+              this.incomeType === 'labor' ?
+                (this.laborIncomeMode === 'monthly'
+                  ? parseNumber(this.monthlyLaborAmounts[month - 1]) - getMonthlyLaborTax(this.monthlyLaborAmounts[month - 1])
+                  : parseNumber(this.laborIncomeMode === 'total' ? String(parseNumber(this.monthlyLaborIncome) / 12) : this.monthlyLaborIncome) -
+                    getMonthlyLaborTax(this.laborIncomeMode === 'total' ? String(parseNumber(this.monthlyLaborIncome) / 12) : this.monthlyLaborIncome)) :
+                getMonthlyNetIncome(month, this.monthlyIncome, this.socialSecurityMode, this.socialSecurityRate,
+                  this.socialSecurityFixed, this.housingFundMode, this.housingFundRate, this.housingFundFixed,
+                  this.monthlyBasicDeduction, this.deductions) -
+                (this.laborIncomeMode === 'monthly'
+                  ? getMonthlyLaborTax(this.monthlyLaborAmounts[month - 1])
+                  : getMonthlyLaborTax(this.laborIncomeMode === 'total' ? String(parseNumber(this.monthlyLaborIncome) / 12) : this.monthlyLaborIncome))))
               .layoutWeight(1)
               .fontSize(13)
               .fontWeight(FontWeight.Bold)
@@ -429,50 +721,84 @@ export struct TaxPanel {
         .fontWeight(FontWeight.Bold)
         .fontColor('#182326')
         .margin({ bottom: 12 })
-      Text('按中国大陆综合所得年度口径估算，起征点、社保、公积金和专项附加扣除均可调整。')
+      Text('按中国大陆综合所得年度口径估算，支持工资薪金和劳务报酬，起征点、社保、公积金和专项附加扣除均可调整。')
         .fontSize(14)
         .fontColor('#667579')
         .lineHeight(21)
         .margin({ bottom: 16 })
-      this.InputField('月收入（元）', this.monthlyIncome, '请输入月收入', (value: string): void => {
-        this.monthlyIncome = value;
-      }, InputType.NUMBER_DECIMAL)
-      this.InputField('起征点（元/月）', this.monthlyBasicDeduction, '请输入起征点', (value: string): void => {
-        this.monthlyBasicDeduction = value;
-      }, InputType.NUMBER_DECIMAL)
 
-      this.SocialSecurityModeToggle()
-      if (this.socialSecurityMode === 'rate') {
-        this.InputField('社保比例（%）', this.socialSecurityRate, '请输入社保比例', (value: string): void => {
-          this.socialSecurityRate = value;
-        }, InputType.NUMBER_DECIMAL)
-      } else {
-        this.InputField('社保固定额（元/月）', this.socialSecurityFixed, '请输入社保固定额', (value: string): void => {
-          this.socialSecurityFixed = value;
+      this.IncomeTypeToggle()
+
+      if (this.incomeType === 'salary' || this.incomeType === 'both') {
+        this.InputField('每月工资（元）', this.monthlyIncome, '请输入月工资', (value: string): void => {
+          this.monthlyIncome = value;
         }, InputType.NUMBER_DECIMAL)
       }
+      if (this.incomeType === 'labor' || this.incomeType === 'both') {
+        this.LaborIncomeModeToggle()
 
-      this.HousingFundModeToggle()
-      if (this.housingFundMode === 'rate') {
-        this.InputField('公积金比例（%）', this.housingFundRate, '请输入公积金比例', (value: string): void => {
-          this.housingFundRate = value;
+        if (this.laborIncomeMode === 'fixed') {
+          this.InputField('每月劳务报酬（元）', this.monthlyLaborIncome, '请输入劳务报酬', (value: string): void => {
+            this.monthlyLaborIncome = value;
+          }, InputType.NUMBER_DECIMAL)
+        } else if (this.laborIncomeMode === 'monthly') {
+          this.MonthlyLaborInputGrid()
+        } else {
+          this.InputField('年度劳务报酬总额（元）', this.monthlyLaborIncome, '请输入年度总额', (value: string): void => {
+            this.monthlyLaborIncome = value;
+          }, InputType.NUMBER_DECIMAL)
+          Text('系统将按总额÷12估算月度预扣税，结果仅供参考。')
+            .fontSize(12)
+            .fontColor('#667579')
+            .margin({ bottom: 12 })
+        }
+      }
+      if (this.incomeType === 'salary' || this.incomeType === 'both') {
+        this.InputField('起征点（元/月）', this.monthlyBasicDeduction, '请输入起征点', (value: string): void => {
+          this.monthlyBasicDeduction = value;
         }, InputType.NUMBER_DECIMAL)
-      } else {
-        this.InputField('公积金固定额（元/月）', this.housingFundFixed, '请输入公积金固定额', (value: string): void => {
-          this.housingFundFixed = value;
-        }, InputType.NUMBER_DECIMAL)
+
+        this.SocialSecurityModeToggle()
+        if (this.socialSecurityMode === 'rate') {
+          this.InputField('社保比例（%）', this.socialSecurityRate, '请输入社保比例', (value: string): void => {
+            this.socialSecurityRate = value;
+          }, InputType.NUMBER_DECIMAL)
+        } else {
+          this.InputField('社保固定额（元/月）', this.socialSecurityFixed, '请输入社保固定额', (value: string): void => {
+            this.socialSecurityFixed = value;
+          }, InputType.NUMBER_DECIMAL)
+        }
+
+        this.HousingFundModeToggle()
+        if (this.housingFundMode === 'rate') {
+          this.InputField('公积金比例（%）', this.housingFundRate, '请输入公积金比例', (value: string): void => {
+            this.housingFundRate = value;
+          }, InputType.NUMBER_DECIMAL)
+        } else {
+          this.InputField('公积金固定额（元/月）', this.housingFundFixed, '请输入公积金固定额', (value: string): void => {
+            this.housingFundFixed = value;
+          }, InputType.NUMBER_DECIMAL)
+        }
       }
 
-      Text('专项附加扣除')
-        .fontSize(15)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#182326')
-        .margin({ top: 8, bottom: 10 })
-      ForEach(DEDUCTION_ITEMS, (item: DeductionItem) => {
-        this.DeductionItemCard(item)
-      }, (item: DeductionItem): string => item.key)
+      if (this.incomeType === 'salary' || this.incomeType === 'both') {
+        Text('专项附加扣除')
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#182326')
+          .margin({ top: 8, bottom: 10 })
+        ForEach(DEDUCTION_ITEMS, (item: DeductionItem) => {
+          this.DeductionItemCard(item)
+        }, (item: DeductionItem): string => item.key)
+      }
 
       this.TaxResultCard()
+      if (this.incomeType === 'labor' || this.incomeType === 'both') {
+        this.LaborTaxCard()
+      }
+      if (this.incomeType === 'both') {
+        this.SettlementCard()
+      }
       this.TaxMetricList()
       this.MonthlyTaxTable()
     }

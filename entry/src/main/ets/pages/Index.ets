@@ -3,6 +3,7 @@ import {
   CalculatorKey,
   ConverterConfig,
   HousingRentTier,
+  LaborIncomeMode,
   MortgageLoanType,
   RepaymentType,
   TaxDeductionState,
@@ -43,7 +44,11 @@ struct Index {
   @State stopwatchRunning: boolean = false;
   @State lapItems: string[] = [];
 
+  @State incomeType: string = 'salary';
   @State monthlyIncome: string = '';
+  @State monthlyLaborIncome: string = '';
+  @State laborIncomeMode: LaborIncomeMode = 'fixed';
+  @State monthlyLaborAmounts: string[] = ['', '', '', '', '', '', '', '', '', '', '', ''];
   @State monthlyBasicDeduction: string = '5000';
   @State socialSecurityMode: string = 'rate';
   @State housingFundMode: string = 'rate';
@@ -426,7 +431,11 @@ struct Index {
                   })
                 } else if (this.activeKey === 'tax') {
                   TaxPanel({
+                    incomeType: this.incomeType,
                     monthlyIncome: this.monthlyIncome,
+                    monthlyLaborIncome: this.monthlyLaborIncome,
+                    laborIncomeMode: this.laborIncomeMode,
+                    monthlyLaborAmounts: this.monthlyLaborAmounts,
                     monthlyBasicDeduction: this.monthlyBasicDeduction,
                     socialSecurityMode: this.socialSecurityMode,
                     housingFundMode: this.housingFundMode,
