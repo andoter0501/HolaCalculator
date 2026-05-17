@@ -2,6 +2,7 @@ import { DeductionItem, HousingRentTier, LaborIncomeMode, TaxDeductionState } fr
 import { DEDUCTION_ITEMS, TAX_MONTHS } from '../../common/Constants';
 import { formatMoney, parseNumber } from '../../common/Utils';
 import {
+  AnnualSettlementResult,
   getAnnualHousingFundDeduction,
   getAnnualLaborTaxFromAmounts,
   getAnnualSocialSecurityDeduction,
@@ -87,6 +88,34 @@ export struct TaxPanel {
     const next: string[] = this.monthlyLaborAmounts.slice();
     next[index] = value;
     this.monthlyLaborAmounts = next;
+  }
+
+  private getMonthlyLaborAmount(month: number): string {
+    if (this.laborIncomeMode === 'monthly') {
+      return this.monthlyLaborAmounts[month - 1];
+    }
+    if (this.laborIncomeMode === 'total') {
+      return String(parseNumber(this.monthlyLaborIncome) / 12);
+    }
+    return this.monthlyLaborIncome;
+  }
+
+  private getSettlementResult(): AnnualSettlementResult {
+    return getAnnualSettlement(this.monthlyIncome, this.monthlyLaborIncome, this.monthlyBasicDeduction,
+      this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
+      this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions,
+      this.laborIncomeMode, this.monthlyLaborAmounts);
+  }
+
+  private getAnnualLaborTax(): number {
+    if (this.laborIncomeMode === 'monthly') {
+      return getAnnualLaborTaxFromAmounts(this.monthlyLaborAmounts);
+    }
+    return getMonthlyLaborTax(
+      this.laborIncomeMode === 'total'
+        ? String(parseNumber(this.monthlyLaborIncome) / 12)
+        : this.monthlyLaborIncome
+    ) * 12;
   }
 
   @Builder
@@ -370,14 +399,7 @@ export struct TaxPanel {
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
         .fontColor('rgba(255,255,255,0.72)')
-      Text(formatMoney(
-        this.laborIncomeMode === 'monthly'
-          ? getAnnualLaborTaxFromAmounts(this.monthlyLaborAmounts) / 12
-          : getMonthlyLaborTax(
-              this.laborIncomeMode === 'total'
-                ? String(parseNumber(this.monthlyLaborIncome) / 12)
-                : this.monthlyLaborIncome
-            )))
+      Text(formatMoney(getMonthlyLaborTax(this.getMonthlyLaborAmount(1))))
         .fontSize(34)
         .fontWeight(FontWeight.Bold)
         .fontColor(Color.White)
@@ -403,20 +425,14 @@ export struct TaxPanel {
         .fontWeight(FontWeight.Bold)
         .fontColor('rgba(255,255,255,0.72)')
 
-      Text(formatMoney(getAnnualSettlement(this.monthlyIncome, this.monthlyLaborIncome, this.monthlyBasicDeduction,
-        this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
-        this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions,
-        this.laborIncomeMode, this.monthlyLaborAmounts).settlement))
+      Text(formatMoney(this.getSettlementResult().settlement))
         .fontSize(34)
         .fontWeight(FontWeight.Bold)
         .fontColor(Color.White)
         .width('100%')
         .margin({ top: 10, bottom: 8 })
 
-      Text(getAnnualSettlement(this.monthlyIncome, this.monthlyLaborIncome, this.monthlyBasicDeduction,
-        this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
-        this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions,
-        this.laborIncomeMode, this.monthlyLaborAmounts).settlement >= 0 ? '需补税' : '可退税')
+      Text(this.getSettlementResult().settlement >= 0 ? '需补税' : '可退税')
         .fontSize(13)
         .fontColor('rgba(255,255,255,0.68)')
         .lineHeight(19)
@@ -449,14 +465,7 @@ export struct TaxPanel {
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
           .fontColor('rgba(255,255,255,0.72)')
-        Text(formatMoney(
-          this.laborIncomeMode === 'monthly'
-            ? getAnnualLaborTaxFromAmounts(this.monthlyLaborAmounts)
-            : getMonthlyLaborTax(
-                this.laborIncomeMode === 'total'
-                  ? String(parseNumber(this.monthlyLaborIncome) / 12)
-                  : this.monthlyLaborIncome
-              ) * 12))
+        Text(formatMoney(this.getAnnualLaborTax()))
           .fontSize(34)
           .fontWeight(FontWeight.Bold)
           .fontColor(Color.White)
@@ -467,10 +476,7 @@ export struct TaxPanel {
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
           .fontColor('rgba(255,255,255,0.72)')
-        Text(formatMoney(getAnnualSettlement(this.monthlyIncome, this.monthlyLaborIncome, this.monthlyBasicDeduction,
-          this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
-          this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions,
-          this.laborIncomeMode, this.monthlyLaborAmounts).totalTax))
+        Text(formatMoney(this.getSettlementResult().totalTax))
           .fontSize(34)
           .fontWeight(FontWeight.Bold)
           .fontColor(Color.White)
@@ -509,9 +515,7 @@ export struct TaxPanel {
         .width('100%')
         .padding({ top: 12, bottom: 12 })
         .border({ width: { bottom: 1 }, color: '#E4ECEB' })
-      }
 
-      if (this.incomeType === 'salary' || this.incomeType === 'both') {
         Row() {
           Text('年度起征扣除')
             .fontSize(14)
@@ -526,9 +530,7 @@ export struct TaxPanel {
         .width('100%')
         .padding({ top: 12, bottom: 12 })
         .border({ width: { bottom: 1 }, color: '#E4ECEB' })
-      }
 
-      if (this.incomeType === 'salary' || this.incomeType === 'both') {
         Row() {
           Text('社保年度扣除')
             .fontSize(14)
@@ -560,9 +562,7 @@ export struct TaxPanel {
         .width('100%')
         .padding({ top: 12, bottom: 12 })
         .border({ width: { bottom: 1 }, color: '#E4ECEB' })
-      }
 
-      if (this.incomeType === 'salary' || this.incomeType === 'both') {
         Row() {
           Text('专项附加扣除')
             .fontSize(14)
@@ -584,14 +584,7 @@ export struct TaxPanel {
           Text('劳务年度预扣税')
             .fontSize(14)
             .fontColor('#667579')
-          Text(formatMoney(
-            this.laborIncomeMode === 'monthly'
-              ? getAnnualLaborTaxFromAmounts(this.monthlyLaborAmounts)
-              : getMonthlyLaborTax(
-                  this.laborIncomeMode === 'total'
-                    ? String(parseNumber(this.monthlyLaborIncome) / 12)
-                    : this.monthlyLaborIncome
-                ) * 12))
+          Text(formatMoney(this.getAnnualLaborTax()))
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
             .fontColor('#182326')
@@ -666,14 +659,7 @@ export struct TaxPanel {
                 .textAlign(TextAlign.End)
             }
             if (this.incomeType === 'labor' || this.incomeType === 'both') {
-              Text(formatMoney(
-                this.laborIncomeMode === 'monthly'
-                  ? getMonthlyLaborTax(this.monthlyLaborAmounts[month - 1])
-                  : getMonthlyLaborTax(
-                      this.laborIncomeMode === 'total'
-                        ? String(parseNumber(this.monthlyLaborIncome) / 12)
-                        : this.monthlyLaborIncome
-                    )))
+              Text(formatMoney(getMonthlyLaborTax(this.getMonthlyLaborAmount(month))))
                 .layoutWeight(1)
                 .fontSize(13)
                 .fontColor('#182326')
@@ -685,16 +671,10 @@ export struct TaxPanel {
                   this.socialSecurityFixed, this.housingFundMode, this.housingFundRate, this.housingFundFixed,
                   this.monthlyBasicDeduction, this.deductions) :
               this.incomeType === 'labor' ?
-                (this.laborIncomeMode === 'monthly'
-                  ? parseNumber(this.monthlyLaborAmounts[month - 1]) - getMonthlyLaborTax(this.monthlyLaborAmounts[month - 1])
-                  : parseNumber(this.laborIncomeMode === 'total' ? String(parseNumber(this.monthlyLaborIncome) / 12) : this.monthlyLaborIncome) -
-                    getMonthlyLaborTax(this.laborIncomeMode === 'total' ? String(parseNumber(this.monthlyLaborIncome) / 12) : this.monthlyLaborIncome)) :
+                parseNumber(this.getMonthlyLaborAmount(month)) - getMonthlyLaborTax(this.getMonthlyLaborAmount(month)) :
                 getMonthlyNetIncome(month, this.monthlyIncome, this.socialSecurityMode, this.socialSecurityRate,
                   this.socialSecurityFixed, this.housingFundMode, this.housingFundRate, this.housingFundFixed,
-                  this.monthlyBasicDeduction, this.deductions) -
-                (this.laborIncomeMode === 'monthly'
-                  ? getMonthlyLaborTax(this.monthlyLaborAmounts[month - 1])
-                  : getMonthlyLaborTax(this.laborIncomeMode === 'total' ? String(parseNumber(this.monthlyLaborIncome) / 12) : this.monthlyLaborIncome))))
+                  this.monthlyBasicDeduction, this.deductions) - getMonthlyLaborTax(this.getMonthlyLaborAmount(month))))
               .layoutWeight(1)
               .fontSize(13)
               .fontWeight(FontWeight.Bold)
