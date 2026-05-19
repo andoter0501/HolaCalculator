@@ -16,7 +16,7 @@ import {
   getTaxableIncome,
   getTaxDue
 } from '../../common/TaxCalculator';
-import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_TEXT_BODY } from '../../common/DesignTokens';
+import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_PRIMARY_PALE, COLOR_TEXT_BODY, COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, COLOR_LINE, COLOR_LINE_LIGHT, COLOR_SURFACE, COLOR_SURFACE_3, COLOR_CARD_DARK, COLOR_CARD_DARKER, COLOR_CARD_DARK_TEXT, COLOR_CARD_DARK_MUTED } from '../../common/DesignTokens';
 
 @Component
 export struct TaxPanel {
@@ -228,9 +228,9 @@ export struct TaxPanel {
       TextInput({ text: value, placeholder: placeholder })
         .height(44)
         .fontSize(16)
-        .backgroundColor('#FBFDFD')
+        .backgroundColor(COLOR_SURFACE)
         .borderRadius(8)
-        .border({ width: 1, color: '#DCE5E4' })
+        .border({ width: 1, color: COLOR_LINE })
         .padding({ left: 12, right: 12 })
         .type(inputType)
         .onChange(onChange)
@@ -324,14 +324,14 @@ export struct TaxPanel {
           Column() {
             Text(`${month}月`)
               .fontSize(12)
-              .fontColor('#667579')
+              .fontColor(COLOR_TEXT_MUTED)
               .margin({ bottom: 4 })
             TextInput({ text: this.monthlyLaborAmounts[month - 1], placeholder: '元' })
               .height(40)
               .fontSize(14)
-              .backgroundColor('#FBFDFD')
+              .backgroundColor(COLOR_SURFACE)
               .borderRadius(8)
-              .border({ width: 1, color: '#DCE5E4' })
+              .border({ width: 1, color: COLOR_LINE })
               .padding({ left: 8, right: 8 })
               .type(InputType.NUMBER_DECIMAL)
               .onChange((value: string): void => {
@@ -360,15 +360,15 @@ export struct TaxPanel {
           .fontColor(Color.White)
           .textAlign(TextAlign.Center)
           .borderRadius(8)
-          .backgroundColor(this.getDeductionEnabled(item.key) ? COLOR_PRIMARY : '#DCE5E4')
+          .backgroundColor(this.getDeductionEnabled(item.key) ? COLOR_PRIMARY : COLOR_LINE)
         Column() {
           Text(item.title)
             .fontSize(14)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
           Text(`${item.standard}  ${item.note}`)
             .fontSize(12)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
             .lineHeight(17)
             .margin({ top: 3 })
         }
@@ -388,8 +388,8 @@ export struct TaxPanel {
     .width('100%')
     .padding(12)
     .borderRadius(8)
-    .backgroundColor(this.getDeductionEnabled(item.key) ? '#F1FBFA' : '#FFFFFF')
-    .border({ width: 1, color: this.getDeductionEnabled(item.key) ? COLOR_PRIMARY : '#E4ECEB' })
+    .backgroundColor(this.getDeductionEnabled(item.key) ? COLOR_PRIMARY_PALE : COLOR_SURFACE)
+    .border({ width: 1, color: this.getDeductionEnabled(item.key) ? COLOR_PRIMARY : COLOR_LINE_LIGHT })
     .margin({ bottom: 10 })
   }
 
@@ -399,7 +399,7 @@ export struct TaxPanel {
       Text(this.laborIncomeMode === 'monthly' ? '劳务报酬平均月度预扣税' : '劳务报酬月度预扣税')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('rgba(255,255,255,0.72)')
+        .fontColor(COLOR_CARD_DARK_TEXT)
       Text(formatMoney(getMonthlyLaborTax(this.getMonthlyLaborAmount(1))))
         .fontSize(34)
         .fontWeight(FontWeight.Bold)
@@ -408,13 +408,13 @@ export struct TaxPanel {
         .margin({ top: 10, bottom: 8 })
       Text('≤800免税；800~4000按(收入-800)×20%；>4000按收入×80%×税率（20%/30%/40%）')
         .fontSize(13)
-        .fontColor('rgba(255,255,255,0.68)')
+        .fontColor(COLOR_CARD_DARK_MUTED)
         .lineHeight(19)
     }
     .width('100%')
     .padding(18)
     .borderRadius(8)
-    .backgroundColor('#1A3A3C')
+    .backgroundColor(COLOR_CARD_DARKER)
     .margin({ top: 18 })
   }
 
@@ -424,7 +424,7 @@ export struct TaxPanel {
       Text('年度汇算清缴')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('rgba(255,255,255,0.72)')
+        .fontColor(COLOR_CARD_DARK_TEXT)
 
       Text(formatMoney(this.getSettlementResult().settlement))
         .fontSize(34)
@@ -435,13 +435,13 @@ export struct TaxPanel {
 
       Text(this.getSettlementResult().settlement >= 0 ? '需补税' : '可退税')
         .fontSize(13)
-        .fontColor('rgba(255,255,255,0.68)')
+        .fontColor(COLOR_CARD_DARK_MUTED)
         .lineHeight(19)
     }
     .width('100%')
     .padding(18)
     .borderRadius(8)
-    .backgroundColor('#0D2B2D')
+    .backgroundColor(COLOR_CARD_DARKER)
     .margin({ top: 18 })
   }
 
@@ -452,7 +452,7 @@ export struct TaxPanel {
         Text('年度工资应纳税额')
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
-          .fontColor('rgba(255,255,255,0.72)')
+          .fontColor(COLOR_CARD_DARK_TEXT)
         Text(formatMoney(getTaxDue(this.monthlyIncome, this.monthlyBasicDeduction,
           this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
           this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
@@ -465,7 +465,7 @@ export struct TaxPanel {
         Text('年度劳务应纳税额')
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
-          .fontColor('rgba(255,255,255,0.72)')
+          .fontColor(COLOR_CARD_DARK_TEXT)
         Text(formatMoney(this.getAnnualLaborTax()))
           .fontSize(34)
           .fontWeight(FontWeight.Bold)
@@ -476,7 +476,7 @@ export struct TaxPanel {
         Text('年度综合应纳税额')
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
-          .fontColor('rgba(255,255,255,0.72)')
+          .fontColor(COLOR_CARD_DARK_TEXT)
         Text(formatMoney(this.getSettlementResult().totalTax))
           .fontSize(34)
           .fontWeight(FontWeight.Bold)
@@ -486,13 +486,13 @@ export struct TaxPanel {
       }
       Text('估算结果仅供参考，未覆盖城市社保、公积金差异。')
         .fontSize(13)
-        .fontColor('rgba(255,255,255,0.68)')
+        .fontColor(COLOR_CARD_DARK_MUTED)
         .lineHeight(19)
     }
     .width('100%')
     .padding(18)
     .borderRadius(8)
-    .backgroundColor('#102729')
+    .backgroundColor(COLOR_CARD_DARK)
     .margin({ top: 18 })
   }
 
@@ -503,98 +503,98 @@ export struct TaxPanel {
         Row() {
           Text('工资应纳税所得额')
             .fontSize(14)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
           Text(formatMoney(getTaxableIncome(this.monthlyIncome, this.monthlyBasicDeduction,
             this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
             this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
             .textAlign(TextAlign.End)
         }
         .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
         .padding({ top: 12, bottom: 12 })
-        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+        .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
 
         Row() {
           Text('年度起征扣除')
             .fontSize(14)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
           Text(formatMoney(parseNumber(this.monthlyBasicDeduction) * 12))
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
             .textAlign(TextAlign.End)
         }
         .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
         .padding({ top: 12, bottom: 12 })
-        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+        .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
 
         Row() {
           Text('社保年度扣除')
             .fontSize(14)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
           Text(formatMoney(getAnnualSocialSecurityDeduction(this.monthlyIncome,
             this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed)))
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
             .textAlign(TextAlign.End)
         }
         .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
         .padding({ top: 12, bottom: 12 })
-        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+        .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
 
         Row() {
           Text('公积金年度扣除')
             .fontSize(14)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
           Text(formatMoney(getAnnualHousingFundDeduction(this.monthlyIncome,
             this.housingFundMode, this.housingFundRate, this.housingFundFixed)))
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
             .textAlign(TextAlign.End)
         }
         .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
         .padding({ top: 12, bottom: 12 })
-        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+        .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
 
         Row() {
           Text('专项附加扣除')
             .fontSize(14)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
           Text(formatMoney(getAnnualSpecialDeduction(this.deductions)))
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
             .textAlign(TextAlign.End)
         }
         .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
         .padding({ top: 12, bottom: 12 })
-        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+        .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
       }
 
       if (this.incomeType === 'labor' || this.incomeType === 'both') {
         Row() {
           Text('劳务年度预扣税')
             .fontSize(14)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
           Text(formatMoney(this.getAnnualLaborTax()))
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
             .textAlign(TextAlign.End)
         }
         .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
         .padding({ top: 12, bottom: 12 })
-        .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+        .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
       }
     }
     .width('100%')
@@ -607,7 +607,7 @@ export struct TaxPanel {
       Text('月度扣税明细')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#182326')
+        .fontColor(COLOR_TEXT_PRIMARY)
         .margin({ bottom: 10 })
       Row() {
         Text('月份')
@@ -649,21 +649,21 @@ export struct TaxPanel {
             Text(`${month}月`)
               .layoutWeight(1)
               .fontSize(13)
-              .fontColor('#667579')
+              .fontColor(COLOR_TEXT_MUTED)
             if (this.incomeType === 'salary' || this.incomeType === 'both') {
               Text(formatMoney(getMonthlyTax(month, this.monthlyIncome, this.monthlyBasicDeduction,
                 this.socialSecurityMode, this.socialSecurityRate, this.socialSecurityFixed,
                 this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
                 .layoutWeight(1)
                 .fontSize(13)
-                .fontColor('#182326')
+                .fontColor(COLOR_TEXT_PRIMARY)
                 .textAlign(TextAlign.End)
             }
             if (this.incomeType === 'labor' || this.incomeType === 'both') {
               Text(formatMoney(getMonthlyLaborTax(this.getMonthlyLaborAmount(month))))
                 .layoutWeight(1)
                 .fontSize(13)
-                .fontColor('#182326')
+                .fontColor(COLOR_TEXT_PRIMARY)
                 .textAlign(TextAlign.End)
             }
             Text(formatMoney(
@@ -679,16 +679,16 @@ export struct TaxPanel {
               .layoutWeight(1)
               .fontSize(13)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#182326')
+              .fontColor(COLOR_TEXT_PRIMARY)
               .textAlign(TextAlign.End)
           }
           .width('100%')
           .padding({ left: 12, right: 12, top: 11, bottom: 11 })
-          .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+          .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
         }, (month: number): string => `${month}`)
       }
       .width('100%')
-      .border({ width: { left: 1, right: 1, bottom: 1 }, color: '#E4ECEB' })
+      .border({ width: { left: 1, right: 1, bottom: 1 }, color: COLOR_LINE_LIGHT })
       .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 8, bottomRight: 8 })
     }
     .width('100%')
@@ -700,11 +700,11 @@ export struct TaxPanel {
       Text('个税估算')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#182326')
+        .fontColor(COLOR_TEXT_PRIMARY)
         .margin({ bottom: 12 })
       Text('按中国大陆综合所得年度口径估算，支持工资薪金和劳务报酬，起征点、社保、公积金和专项附加扣除均可调整。')
         .fontSize(14)
-        .fontColor('#667579')
+        .fontColor(COLOR_TEXT_MUTED)
         .lineHeight(21)
         .margin({ bottom: 16 })
 
@@ -730,7 +730,7 @@ export struct TaxPanel {
           }, InputType.NUMBER_DECIMAL)
           Text('系统将按总额÷12估算月度预扣税，结果仅供参考。')
             .fontSize(12)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
             .margin({ bottom: 12 })
         }
       }
@@ -766,7 +766,7 @@ export struct TaxPanel {
         Text('专项附加扣除')
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
+          .fontColor(COLOR_TEXT_PRIMARY)
           .margin({ top: 8, bottom: 10 })
         ForEach(DEDUCTION_ITEMS, (item: DeductionItem) => {
           this.DeductionItemCard(item)

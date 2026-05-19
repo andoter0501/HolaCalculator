@@ -2,7 +2,9 @@ import { formatDuration } from '../../common/Utils';
 import {
   COLOR_PRIMARY,
   COLOR_TEXT_PRIMARY,
+  COLOR_TEXT_MUTED,
   COLOR_TEXT_BODY,
+  COLOR_LINE_LIGHT,
   COLOR_SURFACE_2
 } from '../../common/DesignTokens';
 
@@ -102,16 +104,16 @@ export struct StopwatchPanel {
           Row() {
             Text(`计次 ${this.lapItems.length - index}`)
               .fontSize(14)
-              .fontColor('#667579')
+              .fontColor(COLOR_TEXT_MUTED)
             Text(item)
               .fontSize(15)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#182326')
+              .fontColor(COLOR_TEXT_PRIMARY)
           }
           .justifyContent(FlexAlign.SpaceBetween)
           .width('100%')
           .padding({ top: 12, bottom: 12 })
-          .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+          .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
         }, (item: string): string => item)
       }
       .width('100%')

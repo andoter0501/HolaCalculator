@@ -9,7 +9,7 @@ import {
   getMortgageTotalInterest,
   getMortgageTotalPayment
 } from '../../common/MortgageCalculator';
-import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_TEXT_BODY, COLOR_LINE } from '../../common/DesignTokens';
+import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_TEXT_BODY, COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, COLOR_LINE, COLOR_LINE_LIGHT, COLOR_SURFACE, COLOR_SURFACE_3, COLOR_CARD_DARK, COLOR_CARD_DARK_MUTED } from '../../common/DesignTokens';
 
 @Component
 export struct MortgagePanel {
@@ -39,9 +39,9 @@ export struct MortgagePanel {
       TextInput({ text: value, placeholder: placeholder })
         .height(44)
         .fontSize(16)
-        .backgroundColor('#FBFDFD')
+        .backgroundColor(COLOR_SURFACE)
         .borderRadius(8)
-        .border({ width: 1, color: '#DCE5E4' })
+        .border({ width: 1, color: COLOR_LINE })
         .padding({ left: 12, right: 12 })
         .type(inputType)
         .onChange(onChange)
@@ -103,7 +103,7 @@ export struct MortgagePanel {
       Text(title)
         .fontSize(15)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#182326')
+        .fontColor(COLOR_TEXT_PRIMARY)
         .margin({ bottom: 10 })
       this.InputField('贷款金额（万元）', amount, '请输入贷款金额', onAmountChange, InputType.NUMBER_DECIMAL)
       this.InputField('贷款年限（年）', years, '请输入贷款年限', onYearsChange, InputType.Number)
@@ -112,7 +112,7 @@ export struct MortgagePanel {
     .width('100%')
     .padding({ left: 12, right: 12, top: 12, bottom: 2 })
     .borderRadius(8)
-    .backgroundColor('#F8FAFA')
+    .backgroundColor(COLOR_SURFACE_3)
     .margin({ bottom: 12 })
   }
 
@@ -131,13 +131,13 @@ export struct MortgagePanel {
         .margin({ top: 10, bottom: 8 })
       Text(this.repaymentType === 'interest' ? '组合贷按两笔贷款分别计算后汇总。' : `末月月供约 ${formatMoney(this.getLastMonthPayment())}`)
         .fontSize(13)
-        .fontColor('rgba(255,255,255,0.68)')
+        .fontColor(COLOR_CARD_DARK_MUTED)
         .lineHeight(19)
     }
     .width('100%')
     .padding(18)
     .borderRadius(8)
-    .backgroundColor('#102729')
+    .backgroundColor(COLOR_CARD_DARK)
     .margin({ top: 18 })
   }
 
@@ -147,47 +147,47 @@ export struct MortgagePanel {
       Row() {
         Text(this.repaymentType === 'interest' ? '总利息' : '末月月供')
           .fontSize(14)
-          .fontColor('#667579')
+          .fontColor(COLOR_TEXT_MUTED)
         Text(this.repaymentType === 'interest' ? formatMoney(this.getTotalInterest()) : formatMoney(this.getLastMonthPayment()))
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
+          .fontColor(COLOR_TEXT_PRIMARY)
           .textAlign(TextAlign.End)
       }
       .justifyContent(FlexAlign.SpaceBetween)
       .width('100%')
       .padding({ top: 12, bottom: 12 })
-      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+      .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
 
       Row() {
         Text(this.repaymentType === 'interest' ? '总还款' : '总利息')
           .fontSize(14)
-          .fontColor('#667579')
+          .fontColor(COLOR_TEXT_MUTED)
         Text(this.repaymentType === 'interest' ? formatMoney(this.getTotalPayment()) : formatMoney(this.getTotalInterest()))
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
+          .fontColor(COLOR_TEXT_PRIMARY)
           .textAlign(TextAlign.End)
       }
       .justifyContent(FlexAlign.SpaceBetween)
       .width('100%')
       .padding({ top: 12, bottom: 12 })
-      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+      .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
 
       Row() {
         Text(this.repaymentType === 'interest' ? '还款期数（最长）' : '总还款')
           .fontSize(14)
-          .fontColor('#667579')
+          .fontColor(COLOR_TEXT_MUTED)
         Text(this.repaymentType === 'interest' ? `${this.getMaxMonths()} 期` : formatMoney(this.getTotalPayment()))
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
+          .fontColor(COLOR_TEXT_PRIMARY)
           .textAlign(TextAlign.End)
       }
       .justifyContent(FlexAlign.SpaceBetween)
       .width('100%')
       .padding({ top: 12, bottom: 12 })
-      .border({ width: { bottom: 1 }, color: '#E4ECEB' })
+      .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
     }
     .width('100%')
     .margin({ bottom: 12 })
@@ -200,18 +200,18 @@ export struct MortgagePanel {
         Text(title)
           .fontSize(14)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#182326')
+          .fontColor(COLOR_TEXT_PRIMARY)
           .margin({ bottom: 8 })
         Row() {
           Text(this.repaymentType === 'interest' ? '月供' : '首月/末月')
             .fontSize(13)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
           Text(this.repaymentType === 'interest' ?
             formatMoney(part.monthlyPayment) :
             `${formatMoney(part.firstMonthPayment)} / ${formatMoney(part.lastMonthPayment)}`)
             .fontSize(13)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
             .textAlign(TextAlign.End)
         }
         .justifyContent(FlexAlign.SpaceBetween)
@@ -220,11 +220,11 @@ export struct MortgagePanel {
         Row() {
           Text('总利息')
             .fontSize(13)
-            .fontColor('#667579')
+            .fontColor(COLOR_TEXT_MUTED)
           Text(formatMoney(part.totalInterest))
             .fontSize(13)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
             .textAlign(TextAlign.End)
         }
         .justifyContent(FlexAlign.SpaceBetween)
@@ -233,7 +233,7 @@ export struct MortgagePanel {
       .width('100%')
       .padding({ left: 12, right: 12, top: 10, bottom: 10 })
       .borderRadius(8)
-      .backgroundColor('#F8FAFA')
+      .backgroundColor(COLOR_SURFACE_3)
       .margin({ bottom: 10 })
     }
   }
@@ -269,11 +269,11 @@ export struct MortgagePanel {
       Text('房贷计算')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#182326')
+        .fontColor(COLOR_TEXT_PRIMARY)
         .margin({ bottom: 12 })
       Text('支持商业贷款、公积金贷款和组合贷，支持等额本息与等额本金，组合贷可分别设置两部分年限与利率。')
         .fontSize(14)
-        .fontColor('#667579')
+        .fontColor(COLOR_TEXT_MUTED)
         .lineHeight(21)
         .margin({ bottom: 16 })
       this.LoanTypeToggle()

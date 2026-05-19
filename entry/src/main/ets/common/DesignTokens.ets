@@ -28,16 +28,16 @@ export const COLOR_TEXT_ON_PRIMARY = '#FFFFFF';
 
 /* ========== 描边 Line ========== */
 export const COLOR_LINE = '#DCE5E4';
-export const COLOR_LINE_LIGHT = '#E8EFEE';
+export const COLOR_LINE_LIGHT = '#E4ECEB';
 
-/* ========== 阴影 Shadow ========== */
-// 暂不导出，ArkUI 中 shadow 需要直接传参
+/* ========== 深色卡片 Dark Card ========== */
+export const COLOR_CARD_DARK = '#102729';
+export const COLOR_CARD_DARKER = '#0D2B2D';
+export const COLOR_CARD_DARK_TEXT = 'rgba(255,255,255,0.72)';
+export const COLOR_CARD_DARK_MUTED = 'rgba(255,255,255,0.68)';
 
 /* ========== 圆角 Radius ========== */
 export const RADIUS_SM = 8;
 export const RADIUS_MD = 12;
 export const RADIUS_LG = 20;
 export const RADIUS_XL = 28;
-
-/* ========== 间距 Spacing ========== */
-// 使用 ArkUI 自身的 margin/padding API，暂不导出常量

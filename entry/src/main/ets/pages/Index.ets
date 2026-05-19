@@ -18,6 +18,7 @@ import {
   COLOR_TEXT_PRIMARY,
   COLOR_TEXT_MUTED,
   COLOR_TEXT_BODY,
+  COLOR_TEXT_PLACEHOLDER,
   COLOR_SURFACE_2,
   COLOR_SURFACE_3,
   COLOR_BG,
@@ -201,8 +202,8 @@ struct Index {
                   .height(30)
                   .width(60)
                   .fontSize(11)
-                  .fontColor(index === 0 || item.key === 'editor' ? '#9AA7AA' : COLOR_PRIMARY)
-                  .backgroundColor(index === 0 || item.key === 'editor' ? '#EEF2F2' : COLOR_PRIMARY_SOFT)
+                  .fontColor(index === 0 || item.key === 'editor' ? COLOR_TEXT_PLACEHOLDER : COLOR_PRIMARY)
+                  .backgroundColor(index === 0 || item.key === 'editor' ? COLOR_SURFACE_2 : COLOR_PRIMARY_SOFT)
                   .borderRadius(8)
                   .enabled(index > 0 && item.key !== 'editor')
                   .onClick((): void => {
@@ -218,8 +219,8 @@ struct Index {
                   .height(30)
                   .width(60)
                   .fontSize(11)
-                  .fontColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? '#9AA7AA' : COLOR_PRIMARY)
-                  .backgroundColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? '#EEF2F2' : COLOR_PRIMARY_SOFT)
+                  .fontColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? COLOR_TEXT_PLACEHOLDER : COLOR_PRIMARY)
+                  .backgroundColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? COLOR_SURFACE_2 : COLOR_PRIMARY_SOFT)
                   .borderRadius(8)
                   .margin({ left: 6 })
                   .enabled(index < this.categoryItems.length - 1 && item.key !== 'editor')
@@ -346,7 +347,7 @@ struct Index {
             .padding({ left: 12, right: 10 })
             .borderRadius(8)
             .backgroundColor(unit.name === (target === 'from' ? this.fromUnitName : this.toUnitName) ? COLOR_PRIMARY_SOFT : COLOR_SURFACE_3)
-            .border({ width: 1, color: unit.name === (target === 'from' ? this.fromUnitName : this.toUnitName) ? '#147C78' : '#E4ECEB' })
+            .border({ width: 1, color: unit.name === (target === 'from' ? this.fromUnitName : this.toUnitName) ? COLOR_PRIMARY : COLOR_LINE_LIGHT })
             .margin({ bottom: 6 })
             .onClick((): void => {
               if (target === 'from') {
@@ -476,7 +477,7 @@ struct Index {
               .padding(18)
               .borderRadius(16)
               .backgroundColor(Color.White)
-              .border({ width: 1, color: '#E4ECEB' })
+              .border({ width: 1, color: COLOR_LINE_LIGHT })
               .align(Alignment.TopStart)
               .alignSelf(ItemAlign.Start)
             }
@@ -498,7 +499,7 @@ struct Index {
       .height('100%')
       .alignItems(HorizontalAlign.Start)
       .justifyContent(FlexAlign.Start)
-      .backgroundColor('#F5F7F8')
+      .backgroundColor(COLOR_BG)
 
       if (this.showCategoryEditor) {
         this.CategoryEditorDialog()
