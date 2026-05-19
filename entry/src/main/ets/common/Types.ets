@@ -1,4 +1,5 @@
-export type CalculatorKey = 'normal' | 'length' | 'volume' | 'time' | 'stopwatch' | 'weight' | 'area' | 'tax' | 'mortgage';
+export type CalculatorKey = 'normal' | 'length' | 'volume' | 'time' | 'stopwatch' | 'weight' | 'area' | 'tax' | 'mortgage' | 'severance';
+export type SeveranceType = 'n' | 'n1' | 'n2';
 export type CategoryMenuKey = CalculatorKey | 'editor';
 export type RepaymentType = 'interest' | 'principal';
 export type MortgageLoanType = 'commercial' | 'fund' | 'mixed';

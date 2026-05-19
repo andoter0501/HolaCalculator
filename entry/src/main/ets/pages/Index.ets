@@ -6,6 +6,7 @@ import {
   LaborIncomeMode,
   MortgageLoanType,
   RepaymentType,
+  SeveranceType,
   TaxDeductionState,
   UnitDefinition
 } from '../common/Types';
@@ -31,6 +32,7 @@ import { ConverterPanel } from './components/ConverterPanel';
 import { StopwatchPanel } from './components/StopwatchPanel';
 import { TaxPanel } from './components/TaxPanel';
 import { MortgagePanel } from './components/MortgagePanel';
+import { SeverancePanel } from './components/SeverancePanel';
 
 @Entry
 @Component
@@ -89,6 +91,12 @@ struct Index {
   @State fundLoanYears: string = '';
   @State fundAnnualRate: string = '';
   @State repaymentType: RepaymentType = 'interest';
+
+  @State severanceType: SeveranceType = 'n';
+  @State severanceWorkYears: string = '';
+  @State severanceMonthlySalary: string = '';
+  @State severanceBonus: string = '';
+  @State severanceLocalAvgSalary: string = '';
 
   private isConverterCategory(key: CalculatorKey): boolean {
     return key === 'length' || key === 'volume' || key === 'time' || key === 'weight' || key === 'area';
@@ -470,6 +478,14 @@ struct Index {
                     fundLoanYears: this.fundLoanYears,
                     fundAnnualRate: this.fundAnnualRate,
                     repaymentType: this.repaymentType
+                  })
+                } else if (this.activeKey === 'severance') {
+                  SeverancePanel({
+                    severanceType: this.severanceType,
+                    workYears: this.severanceWorkYears,
+                    monthlySalary: this.severanceMonthlySalary,
+                    bonus: this.severanceBonus,
+                    localAvgSalary: this.severanceLocalAvgSalary
                   })
                 }
               }

@@ -17,6 +17,7 @@ export const CATEGORIES: CalculatorCategory[] = [
   { key: 'area', title: '面积', icon: '📐', desc: '平方米、公顷、亩' },
   { key: 'tax', title: '个税', icon: '💰', desc: '综合所得估算' },
   { key: 'mortgage', title: '房贷', icon: '🏠', desc: '等额本息、等额本金' },
+  { key: 'severance', title: '裁员赔偿', icon: '⚠️', desc: 'N、N+1、2N 赔偿金' },
   { key: 'editor', title: '编辑', icon: '≡', desc: '调整顺序' }
 ];
 
