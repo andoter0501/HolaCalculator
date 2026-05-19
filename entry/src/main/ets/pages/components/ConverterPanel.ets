@@ -183,18 +183,24 @@ export struct ConverterPanel {
         .margin({ bottom: 14 })
       this.InputRow()
 
-      Button('⇅')
-        .width(54)
-        .height(54)
-        .fontSize(28)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(COLOR_PRIMARY)
-        .backgroundColor(COLOR_PRIMARY_SOFT)
-        .borderRadius(27)
-        .margin({ top: 14, bottom: 14 })
-        .onClick((): void => {
-          this.swapUnits();
-        })
+      Row() {
+        Text('↑')
+          .fontSize(22)
+          .fontColor(COLOR_PRIMARY)
+        Text('↓')
+          .fontSize(22)
+          .fontColor(COLOR_PRIMARY)
+      }
+      .width(54)
+      .height(54)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(VerticalAlign.Center)
+      .backgroundColor(COLOR_PRIMARY_SOFT)
+      .borderRadius(27)
+      .margin({ top: 14, bottom: 14 })
+      .onClick((): void => {
+        this.swapUnits();
+      })
 
       this.ResultRow()
     }

@@ -9,15 +9,15 @@ import {
 
 export const CATEGORIES: CalculatorCategory[] = [
   { key: 'normal', title: '计算器', icon: '🔢', desc: '加减乘除' },
+  { key: 'tax', title: '个税', icon: '💰', desc: '综合所得估算' },
+  { key: 'mortgage', title: '房贷', icon: '🏠', desc: '等额本息、等额本金' },
+  { key: 'severance', title: '裁员赔偿', icon: '⚠️', desc: 'N、N+1、2N 赔偿金' },
   { key: 'length', title: '长度', icon: '📏', desc: '米、厘米、英尺、英里' },
   { key: 'volume', title: '体积', icon: '🧱', desc: '升、毫升、立方米' },
   { key: 'time', title: '时间', icon: '⌛', desc: '秒、分钟、小时、天' },
   { key: 'stopwatch', title: '秒表', icon: '⏱', desc: '计时、暂停、计次' },
   { key: 'weight', title: '重量', icon: '⚖️', desc: '克、千克、磅、吨' },
   { key: 'area', title: '面积', icon: '📐', desc: '平方米、公顷、亩' },
-  { key: 'tax', title: '个税', icon: '💰', desc: '综合所得估算' },
-  { key: 'mortgage', title: '房贷', icon: '🏠', desc: '等额本息、等额本金' },
-  { key: 'severance', title: '裁员赔偿', icon: '⚠️', desc: 'N、N+1、2N 赔偿金' },
   { key: 'editor', title: '编辑', icon: '≡', desc: '调整顺序' }
 ];
 
