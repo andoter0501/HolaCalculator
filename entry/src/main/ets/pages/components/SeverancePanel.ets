@@ -20,6 +20,7 @@ import {
 @Component
 export struct SeverancePanel {
   @Link severanceType: SeveranceType;
+  @Link severanceMultiplier: string;
   @Link workYears: string;
   @Link monthlySalary: string;
   @Link bonus: string;
@@ -31,27 +32,32 @@ export struct SeverancePanel {
       parseNumber(this.workYears),
       parseNumber(this.monthlySalary),
       parseNumber(this.bonus),
-      parseNumber(this.localAvgSalary)
+      parseNumber(this.localAvgSalary),
+      parseNumber(this.severanceMultiplier) || 1
     );
   }
 
   private getSeveranceTypeLabel(): string {
     if (this.severanceType === 'n') return '经济补偿金（N）';
     if (this.severanceType === 'n1') return '经济补偿金 + 代通知金（N+1）';
-    return '违法解除赔偿金（2N）';
+    if (this.severanceType === 'n2') return '违法解除赔偿金（2N）';
+    return `赔偿金（${this.severanceMultiplier || '?'}N）`;
   }
 
   private getSeveranceTypeNote(): string {
     const years: number = parseNumber(this.workYears);
-    const salary: number = parseNumber(this.monthlySalary);
     const result: SeveranceResult = this.getSeveranceResult();
     if (this.severanceType === 'n') {
-      return `工作年限 ${years} 年 × 月工资 ${formatMoney(salary)}`;
+      return `工作年限 ${years} 年 × 月均工资 ${formatMoney(result.avgMonthlySalary)}`;
     }
     if (this.severanceType === 'n1') {
-      return `工作年限 ${years} 年 × 月工资 ${formatMoney(salary)} + 1 个月代通知金`;
+      return `工作年限 ${years} 年 × 月均工资 ${formatMoney(result.avgMonthlySalary)} + 1 个月代通知金`;
     }
-    return `工作年限 ${years} 年 × 月工资 ${formatMoney(salary)} × 2 倍`;
+    if (this.severanceType === 'n2') {
+      return `工作年限 ${years} 年 × 月均工资 ${formatMoney(result.avgMonthlySalary)} × 2 倍`;
+    }
+    const mult: string = this.severanceMultiplier || '?';
+    return `工作年限 ${years} 年 × 月均工资 ${formatMoney(result.avgMonthlySalary)} × ${mult} 倍`;
   }
 
   @Builder
@@ -86,12 +92,22 @@ export struct SeverancePanel {
         Button('2N')
           .height(38)
           .layoutWeight(1)
-          .margin({ left: 4 })
+          .margin({ left: 4, right: 4 })
           .fontSize(13)
           .fontColor(this.severanceType === 'n2' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.severanceType === 'n2' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .onClick((): void => {
             this.severanceType = 'n2';
+          })
+        Button('自定义')
+          .height(38)
+          .layoutWeight(1)
+          .margin({ left: 4 })
+          .fontSize(13)
+          .fontColor(this.severanceType === 'custom' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
+          .backgroundColor(this.severanceType === 'custom' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
+          .onClick((): void => {
+            this.severanceType = 'custom';
           })
       }
       .width('100%')
@@ -172,10 +188,10 @@ export struct SeverancePanel {
       .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
 
       Row() {
-        Text('月工资基数')
+        Text('离职前12个月平均月工资')
           .fontSize(14)
           .fontColor(COLOR_TEXT_MUTED)
-        Text(formatMoney(this.getSeveranceResult().monthlySalary))
+        Text(formatMoney(this.getSeveranceResult().avgMonthlySalary))
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
           .fontColor(COLOR_TEXT_PRIMARY)
@@ -218,8 +234,25 @@ export struct SeverancePanel {
         .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
       }
 
+      if (this.severanceType === 'custom') {
+        Row() {
+          Text('赔偿倍数')
+            .fontSize(14)
+            .fontColor(COLOR_TEXT_MUTED)
+          Text(`${this.severanceMultiplier || '?'} N`)
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(COLOR_TEXT_PRIMARY)
+            .textAlign(TextAlign.End)
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .width('100%')
+        .padding({ top: 12, bottom: 12 })
+        .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
+      }
+
       Row() {
-        Text('经济补偿金')
+        Text(this.severanceType === 'custom' ? '赔偿金' : '经济补偿金')
           .fontSize(14)
           .fontColor(COLOR_TEXT_MUTED)
         Text(formatMoney(this.getSeveranceResult().severance))
@@ -250,23 +283,6 @@ export struct SeverancePanel {
         .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
       }
 
-      if (parseNumber(this.bonus) > 0) {
-        Row() {
-          Text('奖金')
-            .fontSize(14)
-            .fontColor(COLOR_TEXT_MUTED)
-          Text(formatMoney(this.getSeveranceResult().bonus))
-            .fontSize(15)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(COLOR_TEXT_PRIMARY)
-            .textAlign(TextAlign.End)
-        }
-        .justifyContent(FlexAlign.SpaceBetween)
-        .width('100%')
-        .padding({ top: 12, bottom: 12 })
-        .border({ width: { bottom: 1 }, color: COLOR_LINE_LIGHT })
-      }
-
       Row() {
         Text('赔偿总额')
           .fontSize(16)
@@ -289,7 +305,7 @@ export struct SeverancePanel {
   @Builder
   CapWarning() {
     Column() {
-      Text(`⚠️ 月工资 ${formatMoney(this.getSeveranceResult().monthlySalary)} 超过当地社平工资三倍（${formatMoney(this.getSeveranceResult().cappedSalary)}），已按封顶标准计算，年限上限 12 年。`)
+      Text(`⚠️ 离职前12个月平均工资 ${formatMoney(this.getSeveranceResult().avgMonthlySalary)} 超过当地社平工资三倍（${formatMoney(this.getSeveranceResult().cappedSalary)}），已按封顶标准计算，年限上限 12 年。`)
         .fontSize(13)
         .fontColor('#A85F00')
         .lineHeight(19)
@@ -308,7 +324,7 @@ export struct SeverancePanel {
         .fontWeight(FontWeight.Bold)
         .fontColor(COLOR_TEXT_PRIMARY)
         .margin({ bottom: 4 })
-      Text('N · N+1 · 2N 三种场景，按《劳动合同法》计算')
+      Text('N · N+1 · 2N · 自定义赔偿倍数，按《劳动合同法》计算')
         .fontSize(14)
         .fontColor(COLOR_TEXT_MUTED)
         .lineHeight(21)
@@ -318,15 +334,21 @@ export struct SeverancePanel {
       this.InputField('工作年限（年）', this.workYears, '如 3.5', (value: string): void => {
         this.workYears = value;
       })
-      this.InputField('月工资（元）', this.monthlySalary, '如 15000', (value: string): void => {
+      this.InputField('每月基本工资（元）', this.monthlySalary, '如 15000', (value: string): void => {
         this.monthlySalary = value;
       })
-      this.InputField('奖金（可选，元）', this.bonus, '如 20000', (value: string): void => {
+      this.InputField('年度奖金（可选，元）', this.bonus, '如 30000', (value: string): void => {
         this.bonus = value;
       })
       this.InputField('当地社平工资（可选，元/月）', this.localAvgSalary, '填入后自动触发三倍封顶', (value: string): void => {
         this.localAvgSalary = value;
       })
+
+      if (this.severanceType === 'custom') {
+        this.InputField('赔偿倍数', this.severanceMultiplier, '如 1.5', (value: string): void => {
+          this.severanceMultiplier = value;
+        })
+      }
 
       this.ResultCard()
       this.MetricList()

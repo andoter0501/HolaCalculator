@@ -97,6 +97,7 @@ struct Index {
   @State repaymentType: RepaymentType = 'interest';
 
   @State severanceType: SeveranceType = 'n';
+  @State severanceMultiplier: string = '2';
   @State severanceWorkYears: string = '';
   @State severanceMonthlySalary: string = '';
   @State severanceBonus: string = '';
@@ -486,6 +487,7 @@ struct Index {
                 } else if (this.activeKey === 'severance') {
                   SeverancePanel({
                     severanceType: this.severanceType,
+                    severanceMultiplier: this.severanceMultiplier,
                     workYears: this.severanceWorkYears,
                     monthlySalary: this.severanceMonthlySalary,
                     bonus: this.severanceBonus,
