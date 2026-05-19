@@ -84,7 +84,7 @@ export struct ConverterPanel {
           .fontSize(30)
           .fontWeight(FontWeight.Bold)
           .fontColor(COLOR_TEXT_PRIMARY)
-          .backgroundColor('rgba(0,0,0,0)')
+          .backgroundColor(Color.Transparent)
           .padding({ left: 0, right: 6 })
           .type(InputType.NUMBER_DECIMAL)
           .onChange((nextValue: string): void => {

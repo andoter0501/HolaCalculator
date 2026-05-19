@@ -16,7 +16,7 @@ import {
   getTaxableIncome,
   getTaxDue
 } from '../../common/TaxCalculator';
-import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_PRIMARY_PALE, COLOR_TEXT_BODY, COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, COLOR_LINE, COLOR_LINE_LIGHT, COLOR_SURFACE, COLOR_SURFACE_3, COLOR_CARD_DARK, COLOR_CARD_DARKER, COLOR_CARD_DARK_TEXT, COLOR_CARD_DARK_MUTED, RADIUS_SM } from '../../common/DesignTokens';
+import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_PRIMARY_PALE, COLOR_TEXT_BODY, COLOR_TEXT_PRIMARY, COLOR_TEXT_ON_PRIMARY, COLOR_TEXT_MUTED, COLOR_LINE, COLOR_LINE_LIGHT, COLOR_SURFACE, COLOR_SURFACE_3, COLOR_CARD_DARK, COLOR_CARD_DARK_TEXT, COLOR_CARD_DARK_MUTED, RADIUS_SM } from '../../common/DesignTokens';
 
 @Component
 export struct TaxPanel {
@@ -132,7 +132,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.incomeType === 'salary' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.incomeType === 'salary' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.incomeType === 'salary' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ right: 4 })
           .onClick((): void => {
@@ -142,7 +142,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.incomeType === 'labor' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.incomeType === 'labor' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.incomeType === 'labor' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4, right: 4 })
           .onClick((): void => {
@@ -152,7 +152,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.incomeType === 'both' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.incomeType === 'both' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.incomeType === 'both' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4 })
           .onClick((): void => {
@@ -178,7 +178,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.laborIncomeMode === 'fixed' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.laborIncomeMode === 'fixed' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.laborIncomeMode === 'fixed' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ right: 4 })
           .onClick((): void => {
@@ -188,7 +188,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.laborIncomeMode === 'monthly' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.laborIncomeMode === 'monthly' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.laborIncomeMode === 'monthly' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4, right: 4 })
           .onClick((): void => {
@@ -198,7 +198,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.laborIncomeMode === 'total' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.laborIncomeMode === 'total' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.laborIncomeMode === 'total' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4 })
           .onClick((): void => {
@@ -252,7 +252,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.socialSecurityMode === 'rate' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.socialSecurityMode === 'rate' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.socialSecurityMode === 'rate' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ right: 4 })
           .onClick((): void => {
@@ -262,7 +262,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.socialSecurityMode === 'fixed' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.socialSecurityMode === 'fixed' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.socialSecurityMode === 'fixed' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4 })
           .onClick((): void => {
@@ -288,7 +288,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.housingFundMode === 'rate' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.housingFundMode === 'rate' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.housingFundMode === 'rate' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ right: 4 })
           .onClick((): void => {
@@ -298,7 +298,7 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.housingFundMode === 'fixed' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.housingFundMode === 'fixed' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.housingFundMode === 'fixed' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4 })
           .onClick((): void => {
@@ -357,7 +357,7 @@ export struct TaxPanel {
           .height(28)
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
-          .fontColor(Color.White)
+          .fontColor(COLOR_TEXT_ON_PRIMARY)
           .textAlign(TextAlign.Center)
           .borderRadius(RADIUS_SM)
           .backgroundColor(this.getDeductionEnabled(item.key) ? COLOR_PRIMARY : COLOR_LINE)
@@ -403,7 +403,7 @@ export struct TaxPanel {
       Text(formatMoney(getMonthlyLaborTax(this.getMonthlyLaborAmount(1))))
         .fontSize(34)
         .fontWeight(FontWeight.Bold)
-        .fontColor(Color.White)
+        .fontColor(COLOR_TEXT_ON_PRIMARY)
         .width('100%')
         .margin({ top: 10, bottom: 8 })
       Text('≤800免税；800~4000按(收入-800)×20%；>4000按收入×80%×税率（20%/30%/40%）')
@@ -414,7 +414,7 @@ export struct TaxPanel {
     .width('100%')
     .padding(18)
     .borderRadius(RADIUS_SM)
-    .backgroundColor(COLOR_CARD_DARKER)
+    .backgroundColor(COLOR_CARD_DARK)
     .margin({ top: 18 })
   }
 
@@ -429,7 +429,7 @@ export struct TaxPanel {
       Text(formatMoney(this.getSettlementResult().settlement))
         .fontSize(34)
         .fontWeight(FontWeight.Bold)
-        .fontColor(Color.White)
+        .fontColor(COLOR_TEXT_ON_PRIMARY)
         .width('100%')
         .margin({ top: 10, bottom: 8 })
 
@@ -441,7 +441,7 @@ export struct TaxPanel {
     .width('100%')
     .padding(18)
     .borderRadius(RADIUS_SM)
-    .backgroundColor(COLOR_CARD_DARKER)
+    .backgroundColor(COLOR_CARD_DARK)
     .margin({ top: 18 })
   }
 
@@ -458,7 +458,7 @@ export struct TaxPanel {
           this.housingFundMode, this.housingFundRate, this.housingFundFixed, this.deductions)))
           .fontSize(34)
           .fontWeight(FontWeight.Bold)
-          .fontColor(Color.White)
+          .fontColor(COLOR_TEXT_ON_PRIMARY)
           .width('100%')
           .margin({ top: 10, bottom: 8 })
       } else if (this.incomeType === 'labor') {
@@ -469,7 +469,7 @@ export struct TaxPanel {
         Text(formatMoney(this.getAnnualLaborTax()))
           .fontSize(34)
           .fontWeight(FontWeight.Bold)
-          .fontColor(Color.White)
+          .fontColor(COLOR_TEXT_ON_PRIMARY)
           .width('100%')
           .margin({ top: 10, bottom: 8 })
       } else {
@@ -480,7 +480,7 @@ export struct TaxPanel {
         Text(formatMoney(this.getSettlementResult().totalTax))
           .fontSize(34)
           .fontWeight(FontWeight.Bold)
-          .fontColor(Color.White)
+          .fontColor(COLOR_TEXT_ON_PRIMARY)
           .width('100%')
           .margin({ top: 10, bottom: 8 })
       }
@@ -641,7 +641,7 @@ export struct TaxPanel {
       .width('100%')
       .padding({ left: 12, right: 12, top: 10, bottom: 10 })
       .backgroundColor(COLOR_PRIMARY_SOFT)
-      .borderRadius({ topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 })
+      .borderRadius({ topLeft: RADIUS_SM, topRight: RADIUS_SM, bottomLeft: 0, bottomRight: 0 })
 
       Column() {
         ForEach(TAX_MONTHS, (month: number) => {
@@ -689,7 +689,7 @@ export struct TaxPanel {
       }
       .width('100%')
       .border({ width: { left: 1, right: 1, bottom: 1 }, color: COLOR_LINE_LIGHT })
-      .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 8, bottomRight: 8 })
+      .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: RADIUS_SM, bottomRight: RADIUS_SM })
     }
     .width('100%')
     .margin({ top: 16, bottom: 12 })

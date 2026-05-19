@@ -20,11 +20,15 @@ import {
   COLOR_TEXT_MUTED,
   COLOR_TEXT_BODY,
   COLOR_TEXT_PLACEHOLDER,
+  COLOR_TEXT_ON_PRIMARY,
+  COLOR_SURFACE,
   COLOR_SURFACE_2,
   COLOR_SURFACE_3,
   COLOR_BG,
   COLOR_LINE,
-  COLOR_LINE_LIGHT
+  COLOR_LINE_LIGHT,
+  RADIUS_SM,
+  RADIUS_LG
 } from '../common/DesignTokens';
 import { CategoryTabs } from './components/CategoryTabs';
 import { NormalCalculator } from './components/NormalCalculator';
@@ -262,7 +266,7 @@ struct Index {
             .height(44)
             .layoutWeight(1)
             .fontSize(16)
-            .fontColor(Color.White)
+            .fontColor(COLOR_TEXT_ON_PRIMARY)
             .backgroundColor(COLOR_PRIMARY)
             .borderRadius(RADIUS_SM)
             .onClick((): void => {
@@ -370,8 +374,8 @@ struct Index {
       }
       .width('100%')
       .padding({ left: 18, right: 18, top: 14, bottom: 10 })
-      .borderRadius({ topLeft: 20, topRight: 20, bottomLeft: 0, bottomRight: 0 })
-      .backgroundColor(Color.White)
+      .borderRadius({ topLeft: RADIUS_LG, topRight: RADIUS_LG, bottomLeft: 0, bottomRight: 0 })
+      .backgroundColor(COLOR_SURFACE)
       .shadow({
         radius: 24,
         color: 'rgba(0,0,0,0.22)',
@@ -492,7 +496,7 @@ struct Index {
               .width('100%')
               .padding(18)
               .borderRadius(16)
-              .backgroundColor(Color.White)
+              .backgroundColor(COLOR_SURFACE)
               .border({ width: 1, color: COLOR_LINE_LIGHT })
               .align(Alignment.TopStart)
               .alignSelf(ItemAlign.Start)

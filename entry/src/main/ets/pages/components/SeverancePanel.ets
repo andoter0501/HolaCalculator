@@ -7,6 +7,7 @@ import {
   COLOR_TEXT_PRIMARY,
   COLOR_TEXT_MUTED,
   COLOR_TEXT_BODY,
+  COLOR_TEXT_ON_PRIMARY,
   COLOR_SURFACE,
   COLOR_LINE,
   COLOR_LINE_LIGHT,
@@ -67,7 +68,7 @@ export struct SeverancePanel {
           .layoutWeight(1)
           .margin({ right: 4 })
           .fontSize(13)
-          .fontColor(this.severanceType === 'n' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.severanceType === 'n' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.severanceType === 'n' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .onClick((): void => {
             this.severanceType = 'n';
@@ -77,7 +78,7 @@ export struct SeverancePanel {
           .layoutWeight(1)
           .margin({ left: 4, right: 4 })
           .fontSize(13)
-          .fontColor(this.severanceType === 'n1' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.severanceType === 'n1' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.severanceType === 'n1' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .onClick((): void => {
             this.severanceType = 'n1';
@@ -87,7 +88,7 @@ export struct SeverancePanel {
           .layoutWeight(1)
           .margin({ left: 4 })
           .fontSize(13)
-          .fontColor(this.severanceType === 'n2' ? Color.White : COLOR_PRIMARY)
+          .fontColor(this.severanceType === 'n2' ? COLOR_TEXT_ON_PRIMARY : COLOR_PRIMARY)
           .backgroundColor(this.severanceType === 'n2' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .onClick((): void => {
             this.severanceType = 'n2';
@@ -137,7 +138,7 @@ export struct SeverancePanel {
       Text(formatMoney(this.getSeveranceResult().severance))
         .fontSize(34)
         .fontWeight(FontWeight.Bold)
-        .fontColor(Color.White)
+        .fontColor(COLOR_TEXT_ON_PRIMARY)
         .width('100%')
         .margin({ top: 10, bottom: 8 })
       Text(this.getSeveranceTypeNote())

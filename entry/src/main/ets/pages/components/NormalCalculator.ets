@@ -1,4 +1,3 @@
-import { CalculatorKey } from '../../common/Types';
 import { parseNumber, formatNumber } from '../../common/Utils';
 import { isOperator, evaluate } from '../../common/ExpressionEvaluator';
 import {
@@ -6,6 +5,7 @@ import {
   COLOR_PRIMARY_SOFT,
   COLOR_TEXT_PRIMARY,
   COLOR_TEXT_MUTED,
+  COLOR_TEXT_ON_PRIMARY,
   COLOR_BG,
   COLOR_SURFACE,
   COLOR_SURFACE_2,
@@ -194,7 +194,7 @@ export struct NormalCalculator {
       .width(58)
       .fontSize(32)
       .fontWeight(FontWeight.Bold)
-        .fontColor(Color.White)
+        .fontColor(COLOR_TEXT_ON_PRIMARY)
         .backgroundColor(COLOR_PRIMARY)
         .borderRadius(29)
         .margin({ left: 4, right: 4, top: 5, bottom: 5 })

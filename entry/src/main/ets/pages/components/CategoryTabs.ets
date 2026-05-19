@@ -1,6 +1,6 @@
 import { CalculatorCategory, CalculatorKey } from '../../common/Types';
 import { CATEGORIES } from '../../common/Constants';
-import { COLOR_PRIMARY, COLOR_TEXT_MUTED, COLOR_SURFACE, RADIUS_MD } from '../../common/DesignTokens';
+import { COLOR_PRIMARY, COLOR_TEXT_MUTED, COLOR_SURFACE, COLOR_LINE_LIGHT, RADIUS_MD } from '../../common/DesignTokens';
 
 @Component
 export struct CategoryTabs {
@@ -9,12 +9,20 @@ export struct CategoryTabs {
   @Link showCategoryEditor: boolean;
   onCategorySelect: (key: CalculatorKey) => void = (): void => {};
 
+  private cols: number = 0;
+
   private getTopCategoryItems(): CalculatorCategory[] {
-    return this.categoryItems.slice(0, 5);
+    this.cols = Math.ceil(this.categoryItems.length / 2);
+    return this.categoryItems.slice(0, this.cols);
   }
 
   private getBottomCategoryItems(): CalculatorCategory[] {
-    return this.categoryItems.slice(5);
+    this.cols = Math.ceil(this.categoryItems.length / 2);
+    return this.categoryItems.slice(this.cols);
+  }
+
+  private getBlankCount(): number {
+    return this.cols - this.getBottomCategoryItems().length;
   }
 
   @Builder
@@ -26,8 +34,8 @@ export struct CategoryTabs {
         .width(51)
         .height(51)
         .borderRadius(RADIUS_MD)
-        .backgroundColor(Color.White)
-        .border({ width: 1, color: this.activeKey === item.key ? COLOR_PRIMARY : COLOR_SURFACE })
+        .backgroundColor(COLOR_SURFACE)
+        .border({ width: 1, color: this.activeKey === item.key ? COLOR_PRIMARY : COLOR_LINE_LIGHT })
         .shadow({
           radius: this.activeKey === item.key ? 10 : 7,
           color: this.activeKey === item.key ? 'rgba(20,124,120,0.20)' : 'rgba(30,47,50,0.06)',
@@ -67,13 +75,11 @@ export struct CategoryTabs {
             ForEach(this.getBottomCategoryItems(), (item: CalculatorCategory) => {
               this.CategoryMenuItem(item)
             }, (item: CalculatorCategory): string => item.key)
-            if (this.getBottomCategoryItems().length < 5) {
-              ForEach([0], (index: number) => {
-                Blank()
-                  .width(72)
-                  .height(78)
-              }, (index: number): string => `${index}`)
-            }
+            ForEach(Array(this.getBlankCount()).fill(0), (_: number, index: number) => {
+              Blank()
+                .width(72)
+                .height(78)
+            }, (_: number, index: number): string => `blank-${index}`)
           }
         }
         .padding({ left: 18, right: 10, top: 4, bottom: 6 })
