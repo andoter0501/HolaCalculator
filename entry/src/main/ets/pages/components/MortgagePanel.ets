@@ -9,7 +9,7 @@ import {
   getMortgageTotalInterest,
   getMortgageTotalPayment
 } from '../../common/MortgageCalculator';
-import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_TEXT_BODY, COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, COLOR_LINE, COLOR_LINE_LIGHT, COLOR_SURFACE, COLOR_SURFACE_3, COLOR_CARD_DARK, COLOR_CARD_DARK_MUTED } from '../../common/DesignTokens';
+import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_TEXT_BODY, COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, COLOR_LINE, COLOR_LINE_LIGHT, COLOR_SURFACE, COLOR_SURFACE_3, COLOR_CARD_DARK, COLOR_CARD_DARK_MUTED, COLOR_CARD_DARK_TEXT, RADIUS_SM } from '../../common/DesignTokens';
 
 @Component
 export struct MortgagePanel {
@@ -40,7 +40,7 @@ export struct MortgagePanel {
         .height(44)
         .fontSize(16)
         .backgroundColor(COLOR_SURFACE)
-        .borderRadius(8)
+        .borderRadius(RADIUS_SM)
         .border({ width: 1, color: COLOR_LINE })
         .padding({ left: 12, right: 12 })
         .type(inputType)
@@ -111,7 +111,7 @@ export struct MortgagePanel {
     }
     .width('100%')
     .padding({ left: 12, right: 12, top: 12, bottom: 2 })
-    .borderRadius(8)
+    .borderRadius(RADIUS_SM)
     .backgroundColor(COLOR_SURFACE_3)
     .margin({ bottom: 12 })
   }
@@ -122,7 +122,7 @@ export struct MortgagePanel {
       Text(this.repaymentType === 'interest' ? '预计月供' : '首月月供')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('rgba(255,255,255,0.72)')
+        .fontColor(COLOR_CARD_DARK_TEXT)
       Text(formatMoney(this.getMainPayment()))
         .fontSize(34)
         .fontWeight(FontWeight.Bold)
@@ -136,7 +136,7 @@ export struct MortgagePanel {
     }
     .width('100%')
     .padding(18)
-    .borderRadius(8)
+    .borderRadius(RADIUS_SM)
     .backgroundColor(COLOR_CARD_DARK)
     .margin({ top: 18 })
   }
@@ -232,7 +232,7 @@ export struct MortgagePanel {
       }
       .width('100%')
       .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-      .borderRadius(8)
+      .borderRadius(RADIUS_SM)
       .backgroundColor(COLOR_SURFACE_3)
       .margin({ bottom: 10 })
     }

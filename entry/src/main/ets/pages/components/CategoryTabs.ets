@@ -1,6 +1,6 @@
 import { CalculatorCategory, CalculatorKey } from '../../common/Types';
 import { CATEGORIES } from '../../common/Constants';
-import { COLOR_PRIMARY, COLOR_TEXT_MUTED, COLOR_SURFACE } from '../../common/DesignTokens';
+import { COLOR_PRIMARY, COLOR_TEXT_MUTED, COLOR_SURFACE, RADIUS_MD } from '../../common/DesignTokens';
 
 @Component
 export struct CategoryTabs {
@@ -25,7 +25,7 @@ export struct CategoryTabs {
         .textAlign(TextAlign.Center)
         .width(51)
         .height(51)
-        .borderRadius(16)
+        .borderRadius(RADIUS_MD)
         .backgroundColor(Color.White)
         .border({ width: 1, color: this.activeKey === item.key ? COLOR_PRIMARY : COLOR_SURFACE })
         .shadow({

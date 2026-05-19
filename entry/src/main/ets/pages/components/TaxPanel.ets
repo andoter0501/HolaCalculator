@@ -16,7 +16,7 @@ import {
   getTaxableIncome,
   getTaxDue
 } from '../../common/TaxCalculator';
-import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_PRIMARY_PALE, COLOR_TEXT_BODY, COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, COLOR_LINE, COLOR_LINE_LIGHT, COLOR_SURFACE, COLOR_SURFACE_3, COLOR_CARD_DARK, COLOR_CARD_DARKER, COLOR_CARD_DARK_TEXT, COLOR_CARD_DARK_MUTED } from '../../common/DesignTokens';
+import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_PRIMARY_PALE, COLOR_TEXT_BODY, COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, COLOR_LINE, COLOR_LINE_LIGHT, COLOR_SURFACE, COLOR_SURFACE_3, COLOR_CARD_DARK, COLOR_CARD_DARKER, COLOR_CARD_DARK_TEXT, COLOR_CARD_DARK_MUTED, RADIUS_SM } from '../../common/DesignTokens';
 
 @Component
 export struct TaxPanel {
@@ -229,7 +229,7 @@ export struct TaxPanel {
         .height(44)
         .fontSize(16)
         .backgroundColor(COLOR_SURFACE)
-        .borderRadius(8)
+        .borderRadius(RADIUS_SM)
         .border({ width: 1, color: COLOR_LINE })
         .padding({ left: 12, right: 12 })
         .type(inputType)
@@ -330,7 +330,7 @@ export struct TaxPanel {
               .height(40)
               .fontSize(14)
               .backgroundColor(COLOR_SURFACE)
-              .borderRadius(8)
+              .borderRadius(RADIUS_SM)
               .border({ width: 1, color: COLOR_LINE })
               .padding({ left: 8, right: 8 })
               .type(InputType.NUMBER_DECIMAL)
@@ -359,7 +359,7 @@ export struct TaxPanel {
           .fontWeight(FontWeight.Bold)
           .fontColor(Color.White)
           .textAlign(TextAlign.Center)
-          .borderRadius(8)
+          .borderRadius(RADIUS_SM)
           .backgroundColor(this.getDeductionEnabled(item.key) ? COLOR_PRIMARY : COLOR_LINE)
         Column() {
           Text(item.title)
@@ -387,7 +387,7 @@ export struct TaxPanel {
     }
     .width('100%')
     .padding(12)
-    .borderRadius(8)
+    .borderRadius(RADIUS_SM)
     .backgroundColor(this.getDeductionEnabled(item.key) ? COLOR_PRIMARY_PALE : COLOR_SURFACE)
     .border({ width: 1, color: this.getDeductionEnabled(item.key) ? COLOR_PRIMARY : COLOR_LINE_LIGHT })
     .margin({ bottom: 10 })
@@ -413,7 +413,7 @@ export struct TaxPanel {
     }
     .width('100%')
     .padding(18)
-    .borderRadius(8)
+    .borderRadius(RADIUS_SM)
     .backgroundColor(COLOR_CARD_DARKER)
     .margin({ top: 18 })
   }
@@ -440,7 +440,7 @@ export struct TaxPanel {
     }
     .width('100%')
     .padding(18)
-    .borderRadius(8)
+    .borderRadius(RADIUS_SM)
     .backgroundColor(COLOR_CARD_DARKER)
     .margin({ top: 18 })
   }
@@ -491,7 +491,7 @@ export struct TaxPanel {
     }
     .width('100%')
     .padding(18)
-    .borderRadius(8)
+    .borderRadius(RADIUS_SM)
     .backgroundColor(COLOR_CARD_DARK)
     .margin({ top: 18 })
   }

@@ -171,7 +171,7 @@ struct Index {
             .fontSize(13)
             .fontColor(COLOR_PRIMARY)
             .backgroundColor(COLOR_PRIMARY_SOFT)
-            .borderRadius(8)
+            .borderRadius(RADIUS_SM)
             .onClick((): void => {
               this.categoryItems = CATEGORIES.slice();
             })
@@ -190,7 +190,7 @@ struct Index {
                   .width(28)
                   .height(28)
                   .textAlign(TextAlign.Center)
-                  .borderRadius(8)
+                  .borderRadius(RADIUS_SM)
                   .backgroundColor(COLOR_PRIMARY)
                 Text(item.title)
                   .fontSize(14)
@@ -204,7 +204,7 @@ struct Index {
                   .fontSize(11)
                   .fontColor(index === 0 || item.key === 'editor' ? COLOR_TEXT_PLACEHOLDER : COLOR_PRIMARY)
                   .backgroundColor(index === 0 || item.key === 'editor' ? COLOR_SURFACE_2 : COLOR_PRIMARY_SOFT)
-                  .borderRadius(8)
+                  .borderRadius(RADIUS_SM)
                   .enabled(index > 0 && item.key !== 'editor')
                   .onClick((): void => {
                     if (item.key === 'editor') return;
@@ -221,7 +221,7 @@ struct Index {
                   .fontSize(11)
                   .fontColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? COLOR_TEXT_PLACEHOLDER : COLOR_PRIMARY)
                   .backgroundColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? COLOR_SURFACE_2 : COLOR_PRIMARY_SOFT)
-                  .borderRadius(8)
+                  .borderRadius(RADIUS_SM)
                   .margin({ left: 6 })
                   .enabled(index < this.categoryItems.length - 1 && item.key !== 'editor')
                   .onClick((): void => {
@@ -237,7 +237,7 @@ struct Index {
               .width('100%')
               .height(44)
               .padding({ left: 10, right: 10 })
-              .borderRadius(8)
+              .borderRadius(RADIUS_SM)
               .backgroundColor(item.key === this.activeKey ? COLOR_PRIMARY_PALE : COLOR_SURFACE_3)
               .border({ width: 1, color: item.key === this.activeKey ? COLOR_PRIMARY : COLOR_LINE_LIGHT })
               .margin({ bottom: 6 })
@@ -256,7 +256,7 @@ struct Index {
             .fontSize(16)
             .fontColor(Color.White)
             .backgroundColor(COLOR_PRIMARY)
-            .borderRadius(8)
+            .borderRadius(RADIUS_SM)
             .onClick((): void => {
               this.showCategoryEditor = false;
             })
@@ -309,7 +309,7 @@ struct Index {
             .fontColor(COLOR_PRIMARY)
             .textAlign(TextAlign.Center)
             .padding({ left: 12, right: 12 })
-            .borderRadius(8)
+            .borderRadius(RADIUS_SM)
             .backgroundColor(COLOR_PRIMARY_SOFT)
             .onClick((): void => {
               if (target === 'from') {
@@ -345,7 +345,7 @@ struct Index {
             .width('100%')
             .height(42)
             .padding({ left: 12, right: 10 })
-            .borderRadius(8)
+            .borderRadius(RADIUS_SM)
             .backgroundColor(unit.name === (target === 'from' ? this.fromUnitName : this.toUnitName) ? COLOR_PRIMARY_SOFT : COLOR_SURFACE_3)
             .border({ width: 1, color: unit.name === (target === 'from' ? this.fromUnitName : this.toUnitName) ? COLOR_PRIMARY : COLOR_LINE_LIGHT })
             .margin({ bottom: 6 })
@@ -410,7 +410,7 @@ struct Index {
             .width('100%')
             .height('100%')
             .padding(10)
-            .borderRadius(8)
+            .borderRadius(RADIUS_SM)
             .backgroundColor(COLOR_BG)
             .align(Alignment.TopStart)
             .alignSelf(ItemAlign.Start)
