@@ -1,4 +1,10 @@
 import { formatDuration } from '../../common/Utils';
+import {
+  COLOR_PRIMARY,
+  COLOR_TEXT_PRIMARY,
+  COLOR_TEXT_BODY,
+  COLOR_SURFACE_2
+} from '../../common/DesignTokens';
 
 @Component
 export struct StopwatchPanel {
@@ -49,12 +55,12 @@ export struct StopwatchPanel {
       Text('秒表')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#182326')
+        .fontColor(COLOR_TEXT_PRIMARY)
         .margin({ bottom: 12 })
       Text(formatDuration(this.stopwatchMs))
         .fontSize(42)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#102729')
+        .fontColor(COLOR_TEXT_PRIMARY)
         .width('100%')
         .textAlign(TextAlign.Center)
         .margin({ top: 20, bottom: 22 })
@@ -63,7 +69,7 @@ export struct StopwatchPanel {
           .height(42)
           .layoutWeight(1)
           .margin({ right: 5 })
-          .backgroundColor('#147C78')
+          .backgroundColor(COLOR_PRIMARY)
           .onClick((): void => {
             if (this.stopwatchRunning) {
               this.stopTimer();
@@ -75,8 +81,8 @@ export struct StopwatchPanel {
           .height(42)
           .layoutWeight(1)
           .margin({ left: 5, right: 5 })
-          .fontColor('#334247')
-          .backgroundColor('#EEF4F3')
+          .fontColor(COLOR_TEXT_BODY)
+          .backgroundColor(COLOR_SURFACE_2)
           .onClick((): void => {
             this.addLap();
           })
@@ -84,8 +90,8 @@ export struct StopwatchPanel {
           .height(42)
           .layoutWeight(1)
           .margin({ left: 5 })
-          .fontColor('#334247')
-          .backgroundColor('#EEF4F3')
+          .fontColor(COLOR_TEXT_BODY)
+          .backgroundColor(COLOR_SURFACE_2)
           .onClick((): void => {
             this.resetTimer();
           })

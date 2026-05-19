@@ -1,6 +1,17 @@
 import { CalculatorKey, ConverterConfig, UnitDefinition } from '../../common/Types';
 import { CONVERTER_CONFIGS } from '../../common/Constants';
 import { findUnitByName, formatNumber, parseNumber } from '../../common/Utils';
+import {
+  COLOR_PRIMARY,
+  COLOR_PRIMARY_SOFT,
+  COLOR_TEXT_PRIMARY,
+  COLOR_TEXT_MUTED,
+  COLOR_TEXT_BODY,
+  COLOR_SURFACE_3,
+  COLOR_SURFACE_2,
+  COLOR_LINE,
+  RADIUS_MD
+} from '../../common/DesignTokens';
 
 @Component
 export struct ConverterPanel {
@@ -64,7 +75,7 @@ export struct ConverterPanel {
       Text('金额')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 8 })
       Row() {
         TextInput({ text: this.getConverterInputValue(), placeholder: this.getConverterConfig().valuePlaceholder })
@@ -72,7 +83,7 @@ export struct ConverterPanel {
           .height(64)
           .fontSize(30)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#111111')
+          .fontColor(COLOR_TEXT_PRIMARY)
           .backgroundColor('rgba(0,0,0,0)')
           .padding({ left: 0, right: 6 })
           .type(InputType.NUMBER_DECIMAL)
@@ -81,19 +92,19 @@ export struct ConverterPanel {
           })
         Row() {
           Text(this.fromUnitName)
-            .fontSize(22)
-            .fontWeight(FontWeight.Medium)
-            .fontColor('#4A4A4A')
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .fontSize(22)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(COLOR_TEXT_BODY)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
           Text('▾')
             .fontSize(16)
-            .fontColor('#858585')
+            .fontColor(COLOR_TEXT_MUTED)
             .margin({ left: 5, top: 2 })
         }
         .height(48)
         .padding({ left: 10, right: 8 })
-        .backgroundColor('#F0F0F0')
+        .backgroundColor(COLOR_SURFACE_2)
         .borderRadius(10)
         .onClick((): void => {
           this.onOpenFromPicker();
@@ -102,9 +113,9 @@ export struct ConverterPanel {
       .width('100%')
       .height(78)
       .padding({ left: 14, right: 14 })
-      .borderRadius(16)
-      .border({ width: 1.5, color: '#8F8F8F' })
-      .backgroundColor('#F7F7F7')
+      .borderRadius(RADIUS_MD)
+      .border({ width: 1.5, color: COLOR_LINE })
+      .backgroundColor(COLOR_SURFACE_3)
     }
     .width('100%')
   }
@@ -115,7 +126,7 @@ export struct ConverterPanel {
       Text('换算为')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 8 })
       Row() {
         Text(this.getCurrentConversionResultValue())
@@ -123,7 +134,7 @@ export struct ConverterPanel {
           .height(64)
           .fontSize(30)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#111111')
+          .fontColor(COLOR_TEXT_PRIMARY)
           .textAlign(TextAlign.Start)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .maxLines(1)
@@ -132,17 +143,17 @@ export struct ConverterPanel {
           Text(this.getCurrentConversionResultUnit())
             .fontSize(22)
             .fontWeight(FontWeight.Medium)
-            .fontColor('#4A4A4A')
+            .fontColor(COLOR_TEXT_BODY)
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
           Text('▾')
             .fontSize(16)
-            .fontColor('#858585')
+            .fontColor(COLOR_TEXT_MUTED)
             .margin({ left: 5, top: 2 })
         }
         .height(48)
         .padding({ left: 10, right: 8 })
-        .backgroundColor('#F0F0F0')
+        .backgroundColor(COLOR_SURFACE_2)
         .borderRadius(10)
         .onClick((): void => {
           this.onOpenToPicker();
@@ -151,9 +162,9 @@ export struct ConverterPanel {
       .width('100%')
       .height(78)
       .padding({ left: 14, right: 14 })
-      .borderRadius(16)
-      .border({ width: 1.5, color: '#8F8F8F' })
-      .backgroundColor('#F7F7F7')
+      .borderRadius(RADIUS_MD)
+      .border({ width: 1.5, color: COLOR_LINE })
+      .backgroundColor(COLOR_SURFACE_3)
     }
     .width('100%')
   }
@@ -163,11 +174,11 @@ export struct ConverterPanel {
       Text(this.getConverterConfig().title)
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#182326')
+        .fontColor(COLOR_TEXT_PRIMARY)
         .margin({ bottom: 12 })
       Text(this.getConverterConfig().desc)
         .fontSize(14)
-        .fontColor('#667579')
+        .fontColor(COLOR_TEXT_MUTED)
         .lineHeight(21)
         .margin({ bottom: 14 })
       this.InputRow()
@@ -177,8 +188,8 @@ export struct ConverterPanel {
         .height(54)
         .fontSize(28)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#111111')
-        .backgroundColor('#96E25E')
+        .fontColor(COLOR_PRIMARY)
+        .backgroundColor(COLOR_PRIMARY_SOFT)
         .borderRadius(27)
         .margin({ top: 14, bottom: 14 })
         .onClick((): void => {

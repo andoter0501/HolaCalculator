@@ -16,6 +16,7 @@ import {
   getTaxableIncome,
   getTaxDue
 } from '../../common/TaxCalculator';
+import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_TEXT_BODY } from '../../common/DesignTokens';
 
 @Component
 export struct TaxPanel {
@@ -124,15 +125,15 @@ export struct TaxPanel {
       Text('收入类型')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 7 })
       Row() {
         Button('仅工资')
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.incomeType === 'salary' ? Color.White : '#147C78')
-          .backgroundColor(this.incomeType === 'salary' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.incomeType === 'salary' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.incomeType === 'salary' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ right: 4 })
           .onClick((): void => {
             this.incomeType = 'salary';
@@ -141,8 +142,8 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.incomeType === 'labor' ? Color.White : '#147C78')
-          .backgroundColor(this.incomeType === 'labor' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.incomeType === 'labor' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.incomeType === 'labor' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4, right: 4 })
           .onClick((): void => {
             this.incomeType = 'labor';
@@ -151,8 +152,8 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.incomeType === 'both' ? Color.White : '#147C78')
-          .backgroundColor(this.incomeType === 'both' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.incomeType === 'both' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.incomeType === 'both' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4 })
           .onClick((): void => {
             this.incomeType = 'both';
@@ -170,15 +171,15 @@ export struct TaxPanel {
       Text('劳务报酬计税方式')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 7 })
       Row() {
         Button('按月固定')
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.laborIncomeMode === 'fixed' ? Color.White : '#147C78')
-          .backgroundColor(this.laborIncomeMode === 'fixed' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.laborIncomeMode === 'fixed' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.laborIncomeMode === 'fixed' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ right: 4 })
           .onClick((): void => {
             this.laborIncomeMode = 'fixed';
@@ -187,8 +188,8 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.laborIncomeMode === 'monthly' ? Color.White : '#147C78')
-          .backgroundColor(this.laborIncomeMode === 'monthly' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.laborIncomeMode === 'monthly' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.laborIncomeMode === 'monthly' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4, right: 4 })
           .onClick((): void => {
             this.laborIncomeMode = 'monthly';
@@ -197,8 +198,8 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.laborIncomeMode === 'total' ? Color.White : '#147C78')
-          .backgroundColor(this.laborIncomeMode === 'total' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.laborIncomeMode === 'total' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.laborIncomeMode === 'total' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4 })
           .onClick((): void => {
             this.laborIncomeMode = 'total';
@@ -222,7 +223,7 @@ export struct TaxPanel {
       Text(label)
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 7 })
       TextInput({ text: value, placeholder: placeholder })
         .height(44)
@@ -244,15 +245,15 @@ export struct TaxPanel {
       Text('社保扣除方式')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 7 })
       Row() {
         Button('按比例')
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.socialSecurityMode === 'rate' ? Color.White : '#147C78')
-          .backgroundColor(this.socialSecurityMode === 'rate' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.socialSecurityMode === 'rate' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.socialSecurityMode === 'rate' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ right: 4 })
           .onClick((): void => {
             this.socialSecurityMode = 'rate';
@@ -261,8 +262,8 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.socialSecurityMode === 'fixed' ? Color.White : '#147C78')
-          .backgroundColor(this.socialSecurityMode === 'fixed' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.socialSecurityMode === 'fixed' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.socialSecurityMode === 'fixed' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4 })
           .onClick((): void => {
             this.socialSecurityMode = 'fixed';
@@ -280,15 +281,15 @@ export struct TaxPanel {
       Text('公积金扣除方式')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 7 })
       Row() {
         Button('按比例')
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.housingFundMode === 'rate' ? Color.White : '#147C78')
-          .backgroundColor(this.housingFundMode === 'rate' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.housingFundMode === 'rate' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.housingFundMode === 'rate' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ right: 4 })
           .onClick((): void => {
             this.housingFundMode = 'rate';
@@ -297,8 +298,8 @@ export struct TaxPanel {
           .height(38)
           .layoutWeight(1)
           .fontSize(13)
-          .fontColor(this.housingFundMode === 'fixed' ? Color.White : '#147C78')
-          .backgroundColor(this.housingFundMode === 'fixed' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.housingFundMode === 'fixed' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.housingFundMode === 'fixed' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .margin({ left: 4 })
           .onClick((): void => {
             this.housingFundMode = 'fixed';
@@ -316,7 +317,7 @@ export struct TaxPanel {
       Text('各月劳务报酬（元）')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 7 })
       Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
         ForEach(TAX_MONTHS, (month: number) => {
@@ -359,7 +360,7 @@ export struct TaxPanel {
           .fontColor(Color.White)
           .textAlign(TextAlign.Center)
           .borderRadius(8)
-          .backgroundColor(this.getDeductionEnabled(item.key) ? '#147C78' : '#DCE5E4')
+          .backgroundColor(this.getDeductionEnabled(item.key) ? COLOR_PRIMARY : '#DCE5E4')
         Column() {
           Text(item.title)
             .fontSize(14)
@@ -388,7 +389,7 @@ export struct TaxPanel {
     .padding(12)
     .borderRadius(8)
     .backgroundColor(this.getDeductionEnabled(item.key) ? '#F1FBFA' : '#FFFFFF')
-    .border({ width: 1, color: this.getDeductionEnabled(item.key) ? '#147C78' : '#E4ECEB' })
+    .border({ width: 1, color: this.getDeductionEnabled(item.key) ? COLOR_PRIMARY : '#E4ECEB' })
     .margin({ bottom: 10 })
   }
 
@@ -613,13 +614,13 @@ export struct TaxPanel {
           .layoutWeight(1)
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#415155')
+          .fontColor(COLOR_TEXT_BODY)
         if (this.incomeType === 'salary' || this.incomeType === 'both') {
           Text('工资税')
             .layoutWeight(1)
             .fontSize(13)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#415155')
+            .fontColor(COLOR_TEXT_BODY)
             .textAlign(TextAlign.End)
         }
         if (this.incomeType === 'labor' || this.incomeType === 'both') {
@@ -627,19 +628,19 @@ export struct TaxPanel {
             .layoutWeight(1)
             .fontSize(13)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#415155')
+            .fontColor(COLOR_TEXT_BODY)
             .textAlign(TextAlign.End)
         }
         Text('到手')
           .layoutWeight(1)
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#415155')
+          .fontColor(COLOR_TEXT_BODY)
           .textAlign(TextAlign.End)
       }
       .width('100%')
       .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-      .backgroundColor('#DFF2F0')
+      .backgroundColor(COLOR_PRIMARY_SOFT)
       .borderRadius({ topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 })
 
       Column() {

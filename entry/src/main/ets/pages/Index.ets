@@ -11,6 +11,19 @@ import {
 } from '../common/Types';
 import { CATEGORIES, CONVERTER_CONFIGS, DEFAULT_UNIT_INDEXES } from '../common/Constants';
 import { clampUnitIndex, findUnitIndexByName } from '../common/Utils';
+import {
+  COLOR_PRIMARY,
+  COLOR_PRIMARY_SOFT,
+  COLOR_PRIMARY_PALE,
+  COLOR_TEXT_PRIMARY,
+  COLOR_TEXT_MUTED,
+  COLOR_TEXT_BODY,
+  COLOR_SURFACE_2,
+  COLOR_SURFACE_3,
+  COLOR_BG,
+  COLOR_LINE,
+  COLOR_LINE_LIGHT
+} from '../common/DesignTokens';
 import { CategoryTabs } from './components/CategoryTabs';
 import { NormalCalculator } from './components/NormalCalculator';
 import { ConverterPanel } from './components/ConverterPanel';
@@ -143,10 +156,10 @@ struct Index {
             Text('编辑分类顺序')
               .fontSize(20)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#182326')
+              .fontColor(COLOR_TEXT_PRIMARY)
             Text('使用上移、下移调整顶部标签顺序。')
               .fontSize(13)
-              .fontColor('#667579')
+              .fontColor(COLOR_TEXT_MUTED)
               .margin({ top: 6 })
           }
           .alignItems(HorizontalAlign.Start)
@@ -155,8 +168,8 @@ struct Index {
             .height(34)
             .width(62)
             .fontSize(13)
-            .fontColor('#147C78')
-            .backgroundColor('#DFF2F0')
+            .fontColor(COLOR_PRIMARY)
+            .backgroundColor(COLOR_PRIMARY_SOFT)
             .borderRadius(8)
             .onClick((): void => {
               this.categoryItems = CATEGORIES.slice();
@@ -177,19 +190,19 @@ struct Index {
                   .height(28)
                   .textAlign(TextAlign.Center)
                   .borderRadius(8)
-                  .backgroundColor('#147C78')
+                  .backgroundColor(COLOR_PRIMARY)
                 Text(item.title)
                   .fontSize(14)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor('#182326')
+                  .fontColor(COLOR_TEXT_PRIMARY)
                   .margin({ left: 10 })
                   .layoutWeight(1)
                 Button('上移')
                   .height(30)
                   .width(60)
                   .fontSize(11)
-                  .fontColor(index === 0 || item.key === 'editor' ? '#9AA7AA' : '#147C78')
-                  .backgroundColor(index === 0 || item.key === 'editor' ? '#EEF2F2' : '#DFF2F0')
+                  .fontColor(index === 0 || item.key === 'editor' ? '#9AA7AA' : COLOR_PRIMARY)
+                  .backgroundColor(index === 0 || item.key === 'editor' ? '#EEF2F2' : COLOR_PRIMARY_SOFT)
                   .borderRadius(8)
                   .enabled(index > 0 && item.key !== 'editor')
                   .onClick((): void => {
@@ -205,8 +218,8 @@ struct Index {
                   .height(30)
                   .width(60)
                   .fontSize(11)
-                  .fontColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? '#9AA7AA' : '#147C78')
-                  .backgroundColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? '#EEF2F2' : '#DFF2F0')
+                  .fontColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? '#9AA7AA' : COLOR_PRIMARY)
+                  .backgroundColor(index === this.categoryItems.length - 1 || item.key === 'editor' ? '#EEF2F2' : COLOR_PRIMARY_SOFT)
                   .borderRadius(8)
                   .margin({ left: 6 })
                   .enabled(index < this.categoryItems.length - 1 && item.key !== 'editor')
@@ -224,8 +237,8 @@ struct Index {
               .height(44)
               .padding({ left: 10, right: 10 })
               .borderRadius(8)
-              .backgroundColor(item.key === this.activeKey ? '#F1FBFA' : '#FBFDFD')
-              .border({ width: 1, color: item.key === this.activeKey ? '#147C78' : '#E4ECEB' })
+              .backgroundColor(item.key === this.activeKey ? COLOR_PRIMARY_PALE : COLOR_SURFACE_3)
+              .border({ width: 1, color: item.key === this.activeKey ? COLOR_PRIMARY : COLOR_LINE_LIGHT })
               .margin({ bottom: 6 })
             }, (item: CalculatorCategory): string => item.key)
           }
@@ -241,7 +254,7 @@ struct Index {
             .layoutWeight(1)
             .fontSize(16)
             .fontColor(Color.White)
-            .backgroundColor('#147C78')
+            .backgroundColor(COLOR_PRIMARY)
             .borderRadius(8)
             .onClick((): void => {
               this.showCategoryEditor = false;
@@ -254,8 +267,8 @@ struct Index {
       .height('62%')
       .padding({ left: 16, right: 16, top: 18, bottom: 16 })
       .borderRadius(14)
-      .backgroundColor('#F8FAFA')
-      .border({ width: 1, color: '#DCE5E4' })
+      .backgroundColor(COLOR_SURFACE_3)
+      .border({ width: 1, color: COLOR_LINE })
       Blank()
     }
     .width('100%')
@@ -273,7 +286,7 @@ struct Index {
           .width(38)
           .height(4)
           .borderRadius(2)
-          .backgroundColor('#C7D3D1')
+          .backgroundColor(COLOR_LINE)
           .margin({ bottom: 14 })
 
         Row() {
@@ -281,10 +294,10 @@ struct Index {
             Text(target === 'from' ? '选择原单位' : '选择目标单位')
               .fontSize(18)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#182326')
+              .fontColor(COLOR_TEXT_PRIMARY)
             Text(this.getConverterConfig().title)
               .fontSize(13)
-              .fontColor('#667579')
+              .fontColor(COLOR_TEXT_MUTED)
               .margin({ top: 6 })
           }
           .alignItems(HorizontalAlign.Start)
@@ -292,11 +305,11 @@ struct Index {
           Text('关闭')
             .height(32)
             .fontSize(14)
-            .fontColor('#147C78')
+            .fontColor(COLOR_PRIMARY)
             .textAlign(TextAlign.Center)
             .padding({ left: 12, right: 12 })
             .borderRadius(8)
-            .backgroundColor('#DFF2F0')
+            .backgroundColor(COLOR_PRIMARY_SOFT)
             .onClick((): void => {
               if (target === 'from') {
                 this.showFromUnitPicker = false;
@@ -314,16 +327,16 @@ struct Index {
               Text(unit.name)
                 .fontSize(15)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#182326')
+                .fontColor(COLOR_TEXT_PRIMARY)
                 .layoutWeight(1)
               Text(unit.symbol)
                 .fontSize(13)
-                .fontColor('#667579')
+                .fontColor(COLOR_TEXT_MUTED)
               if (unit.name === (target === 'from' ? this.fromUnitName : this.toUnitName)) {
                 Text('✓')
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor('#147C78')
+                  .fontColor(COLOR_PRIMARY)
                   .width(24)
                   .textAlign(TextAlign.End)
               }
@@ -332,7 +345,7 @@ struct Index {
             .height(42)
             .padding({ left: 12, right: 10 })
             .borderRadius(8)
-            .backgroundColor(unit.name === (target === 'from' ? this.fromUnitName : this.toUnitName) ? '#DFF2F0' : '#F8FAFA')
+            .backgroundColor(unit.name === (target === 'from' ? this.fromUnitName : this.toUnitName) ? COLOR_PRIMARY_SOFT : COLOR_SURFACE_3)
             .border({ width: 1, color: unit.name === (target === 'from' ? this.fromUnitName : this.toUnitName) ? '#147C78' : '#E4ECEB' })
             .margin({ bottom: 6 })
             .onClick((): void => {
@@ -369,7 +382,7 @@ struct Index {
           Text('Hola 计算器')
             .fontSize(28)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#182326')
+            .fontColor(COLOR_TEXT_PRIMARY)
         }
         .alignItems(HorizontalAlign.Start)
         .width('100%')
@@ -397,7 +410,7 @@ struct Index {
             .height('100%')
             .padding(10)
             .borderRadius(8)
-            .backgroundColor('#F8EAF8')
+            .backgroundColor(COLOR_BG)
             .align(Alignment.TopStart)
             .alignSelf(ItemAlign.Start)
           }

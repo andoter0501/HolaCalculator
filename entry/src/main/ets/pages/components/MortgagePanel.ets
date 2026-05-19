@@ -9,6 +9,7 @@ import {
   getMortgageTotalInterest,
   getMortgageTotalPayment
 } from '../../common/MortgageCalculator';
+import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT, COLOR_TEXT_BODY, COLOR_LINE } from '../../common/DesignTokens';
 
 @Component
 export struct MortgagePanel {
@@ -33,7 +34,7 @@ export struct MortgagePanel {
       Text(label)
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 7 })
       TextInput({ text: value, placeholder: placeholder })
         .height(44)
@@ -55,7 +56,7 @@ export struct MortgagePanel {
       Text('贷款类型')
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#415155')
+        .fontColor(COLOR_TEXT_BODY)
         .margin({ bottom: 7 })
       Row() {
         Button('商业贷款')
@@ -63,8 +64,8 @@ export struct MortgagePanel {
           .layoutWeight(1)
           .margin({ right: 4 })
           .fontSize(13)
-          .fontColor(this.mortgageLoanType === 'commercial' ? Color.White : '#147C78')
-          .backgroundColor(this.mortgageLoanType === 'commercial' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.mortgageLoanType === 'commercial' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.mortgageLoanType === 'commercial' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .onClick((): void => {
             this.mortgageLoanType = 'commercial';
           })
@@ -73,8 +74,8 @@ export struct MortgagePanel {
           .layoutWeight(1)
           .margin({ left: 4, right: 4 })
           .fontSize(13)
-          .fontColor(this.mortgageLoanType === 'fund' ? Color.White : '#147C78')
-          .backgroundColor(this.mortgageLoanType === 'fund' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.mortgageLoanType === 'fund' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.mortgageLoanType === 'fund' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .onClick((): void => {
             this.mortgageLoanType = 'fund';
           })
@@ -83,8 +84,8 @@ export struct MortgagePanel {
           .layoutWeight(1)
           .margin({ left: 4 })
           .fontSize(13)
-          .fontColor(this.mortgageLoanType === 'mixed' ? Color.White : '#147C78')
-          .backgroundColor(this.mortgageLoanType === 'mixed' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.mortgageLoanType === 'mixed' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.mortgageLoanType === 'mixed' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .onClick((): void => {
             this.mortgageLoanType = 'mixed';
           })
@@ -303,8 +304,8 @@ export struct MortgagePanel {
           .height(38)
           .layoutWeight(1)
           .margin({ right: 4 })
-          .fontColor(this.repaymentType === 'interest' ? Color.White : '#147C78')
-          .backgroundColor(this.repaymentType === 'interest' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.repaymentType === 'interest' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.repaymentType === 'interest' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .onClick((): void => {
             this.repaymentType = 'interest';
           })
@@ -312,8 +313,8 @@ export struct MortgagePanel {
           .height(38)
           .layoutWeight(1)
           .margin({ left: 4 })
-          .fontColor(this.repaymentType === 'principal' ? Color.White : '#147C78')
-          .backgroundColor(this.repaymentType === 'principal' ? '#147C78' : '#DFF2F0')
+          .fontColor(this.repaymentType === 'principal' ? Color.White : COLOR_PRIMARY)
+          .backgroundColor(this.repaymentType === 'principal' ? COLOR_PRIMARY : COLOR_PRIMARY_SOFT)
           .onClick((): void => {
             this.repaymentType = 'principal';
           })

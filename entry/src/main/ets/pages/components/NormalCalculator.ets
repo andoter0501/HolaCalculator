@@ -1,6 +1,16 @@
 import { CalculatorKey } from '../../common/Types';
 import { parseNumber, formatNumber } from '../../common/Utils';
 import { isOperator, evaluate } from '../../common/ExpressionEvaluator';
+import {
+  COLOR_PRIMARY,
+  COLOR_PRIMARY_SOFT,
+  COLOR_TEXT_PRIMARY,
+  COLOR_TEXT_MUTED,
+  COLOR_BG,
+  COLOR_SURFACE,
+  COLOR_SURFACE_2,
+  RADIUS_MD
+} from '../../common/DesignTokens';
 
 @Component
 export struct NormalCalculator {
@@ -184,16 +194,16 @@ export struct NormalCalculator {
       .width(58)
       .fontSize(32)
       .fontWeight(FontWeight.Bold)
-      .fontColor(Color.White)
-      .backgroundColor('#1E4AA8')
-      .borderRadius(29)
-      .margin({ left: 4, right: 4, top: 5, bottom: 5 })
-      .shadow({
-        radius: 10,
-        color: 'rgba(30,74,168,0.26)',
-        offsetX: 0,
-        offsetY: 5
-      })
+        .fontColor(Color.White)
+        .backgroundColor(COLOR_PRIMARY)
+        .borderRadius(29)
+        .margin({ left: 4, right: 4, top: 5, bottom: 5 })
+        .shadow({
+          radius: 10,
+          color: 'rgba(20,124,120,0.25)',
+          offsetX: 0,
+          offsetY: 5
+        })
       .onClick((): void => {
         this.calculateResult();
       })
@@ -205,7 +215,7 @@ export struct NormalCalculator {
         Text(this.getNormalPreviewText())
           .height(24)
           .fontSize(18)
-          .fontColor('#7C6F82')
+          .fontColor(COLOR_TEXT_MUTED)
           .textAlign(TextAlign.End)
           .width('100%')
           .maxLines(1)
@@ -214,7 +224,7 @@ export struct NormalCalculator {
           .height(62)
           .fontSize(42)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#17121D')
+          .fontColor(COLOR_TEXT_PRIMARY)
           .textAlign(TextAlign.End)
           .width('100%')
           .maxLines(1)
@@ -225,48 +235,48 @@ export struct NormalCalculator {
       .margin({ bottom: 6 })
 
       Row() {
-        this.CalcButton('C', '#1E4AA8', '#F5EFF8', (): void => {
+        this.CalcButton('C', COLOR_TEXT_MUTED, COLOR_SURFACE_2, (): void => {
           this.clearCalculator();
         })
-        this.CalcButton('÷', '#1E4AA8', '#F5EFF8', (): void => {
+        this.CalcButton('÷', COLOR_PRIMARY, COLOR_PRIMARY_SOFT, (): void => {
           this.appendOperator('/');
         })
-        this.CalcButton('×', '#1E4AA8', '#F5EFF8', (): void => {
+        this.CalcButton('×', COLOR_PRIMARY, COLOR_PRIMARY_SOFT, (): void => {
           this.appendOperator('*');
         })
-        this.CalcButton('⌫', '#1E4AA8', '#F5EFF8', (): void => {
+        this.CalcButton('⌫', COLOR_TEXT_MUTED, COLOR_SURFACE_2, (): void => {
           this.backspace();
         })
       }
       .width('100%')
 
       Row() {
-        this.CalcButton('7', '#17121D', '#F8F1FA', (): void => {
+        this.CalcButton('7', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
           this.appendDigit('7');
         })
-        this.CalcButton('8', '#17121D', '#F8F1FA', (): void => {
+        this.CalcButton('8', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
           this.appendDigit('8');
         })
-        this.CalcButton('9', '#17121D', '#F8F1FA', (): void => {
+        this.CalcButton('9', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
           this.appendDigit('9');
         })
-        this.CalcButton('-', '#1E4AA8', '#F5EFF8', (): void => {
+        this.CalcButton('-', COLOR_PRIMARY, COLOR_PRIMARY_SOFT, (): void => {
           this.appendOperator('-');
         })
       }
       .width('100%')
 
       Row() {
-        this.CalcButton('4', '#17121D', '#F8F1FA', (): void => {
+        this.CalcButton('4', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
           this.appendDigit('4');
         })
-        this.CalcButton('5', '#17121D', '#F8F1FA', (): void => {
+        this.CalcButton('5', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
           this.appendDigit('5');
         })
-        this.CalcButton('6', '#17121D', '#F8F1FA', (): void => {
+        this.CalcButton('6', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
           this.appendDigit('6');
         })
-        this.CalcButton('+', '#1E4AA8', '#F5EFF8', (): void => {
+        this.CalcButton('+', COLOR_PRIMARY, COLOR_PRIMARY_SOFT, (): void => {
           this.appendOperator('+');
         })
       }
@@ -274,30 +284,30 @@ export struct NormalCalculator {
 
       Row() {
         Column() {
-          Row() {
-            this.CalcButton('1', '#17121D', '#F8F1FA', (): void => {
-              this.appendDigit('1');
-            })
-            this.CalcButton('2', '#17121D', '#F8F1FA', (): void => {
-              this.appendDigit('2');
-            })
-            this.CalcButton('3', '#17121D', '#F8F1FA', (): void => {
-              this.appendDigit('3');
-            })
-          }
-          .width('100%')
-          Row() {
-            this.CalcButton('%', '#17121D', '#F8F1FA', (): void => {
-              this.applyPercent();
-            })
-            this.CalcButton('0', '#17121D', '#F8F1FA', (): void => {
-              this.appendDigit('0');
-            })
-            this.CalcButton('.', '#17121D', '#F8F1FA', (): void => {
-              this.appendDecimal();
-            })
-          }
-          .width('100%')
+      Row() {
+        this.CalcButton('1', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+          this.appendDigit('1');
+        })
+        this.CalcButton('2', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+          this.appendDigit('2');
+        })
+        this.CalcButton('3', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+          this.appendDigit('3');
+        })
+      }
+      .width('100%')
+      Row() {
+        this.CalcButton('%', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+          this.applyPercent();
+        })
+        this.CalcButton('0', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+          this.appendDigit('0');
+        })
+        this.CalcButton('.', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+          this.appendDecimal();
+        })
+      }
+      .width('100%')
         }
         .layoutWeight(1)
         this.EqualButton()
@@ -307,7 +317,7 @@ export struct NormalCalculator {
     .width('100%')
     .height('100%')
     .padding({ left: 4, right: 4, bottom: 4 })
-    .backgroundColor('#F8EAF8')
-    .borderRadius(8)
+    .backgroundColor(COLOR_BG)
+    .borderRadius(RADIUS_MD)
   }
 }
