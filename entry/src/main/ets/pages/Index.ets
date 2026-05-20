@@ -42,7 +42,7 @@ import { SeverancePanel } from './components/SeverancePanel';
 @Component
 struct Index {
   @State activeKey: CalculatorKey = 'normal';
-  @State categoryItems: CalculatorCategory[] = CATEGORIES.slice();
+  @State categoryItems: CalculatorCategory[] = CATEGORIES.filter((item): boolean => item.key !== 'severance');
   @State showCategoryEditor: boolean = false;
 
   @State converterKey: CalculatorKey = 'length';
