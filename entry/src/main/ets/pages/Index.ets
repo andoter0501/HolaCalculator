@@ -392,13 +392,43 @@ struct Index {
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
       Column() {
-        Column() {
-          Text('Hola 计算器')
-            .fontSize(28)
+        Row() {
+          Stack() {
+            Column() {
+              Row()
+                .width(12).height(2)
+                .borderRadius(1)
+                .backgroundColor(COLOR_PRIMARY)
+                .margin({ bottom: 2 })
+              Row({ space: 1.5 }) {
+                Column().width(2.5).height(2.5).borderRadius(1.25).backgroundColor(COLOR_PRIMARY)
+                Column().width(2.5).height(2.5).borderRadius(1.25).backgroundColor(COLOR_PRIMARY)
+                Column().width(2.5).height(2.5).borderRadius(1.25).backgroundColor(COLOR_PRIMARY)
+              }
+              .margin({ bottom: 1.5 })
+              Row({ space: 1.5 }) {
+                Column().width(2.5).height(2.5).borderRadius(1.25).backgroundColor(COLOR_PRIMARY)
+                Column().width(2.5).height(2.5).borderRadius(1.25).backgroundColor(COLOR_PRIMARY)
+                Column().width(2.5).height(2.5).borderRadius(1.25).backgroundColor(COLOR_PRIMARY)
+              }
+            }
+            .width(18).height(15)
+            .padding(2)
+            .borderRadius(3)
+            .backgroundColor(Color.White)
+          }
+          .width(32)
+          .height(32)
+          .borderRadius(16)
+          .backgroundColor(COLOR_PRIMARY)
+          Text('万能计算器')
+            .fontSize(22)
             .fontWeight(FontWeight.Bold)
             .fontColor(COLOR_TEXT_PRIMARY)
+            .margin({ left: 8 })
         }
-        .alignItems(HorizontalAlign.Start)
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.Center)
         .width('100%')
         .padding({ left: 34, right: 34, top: 24, bottom: 10 })
 
