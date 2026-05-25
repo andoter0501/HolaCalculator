@@ -2,15 +2,15 @@
   "string": [
     {
       "name": "app_name",
-      "value": "万能计算器"
+      "value": "Hola计算器"
     },
     {
       "name": "module_desc",
-      "value": "万能计算器 entry 模块"
+      "value": "Hola计算器 entry 模块"
     },
     {
       "name": "entry_ability_desc",
-      "value": "万能计算器主入口"
+      "value": "Hola计算器主入口"
     }
   ]
 }

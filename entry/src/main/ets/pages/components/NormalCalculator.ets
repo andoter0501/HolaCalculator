@@ -191,7 +191,7 @@ export struct NormalCalculator {
   EqualButton() {
     Button('=')
       .height(118)
-      .width(58)
+      .layoutWeight(1)
       .fontSize(32)
       .fontWeight(FontWeight.Bold)
         .fontColor(COLOR_TEXT_ON_PRIMARY)
@@ -284,32 +284,33 @@ export struct NormalCalculator {
 
       Row() {
         Column() {
-      Row() {
-        this.CalcButton('1', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
-          this.appendDigit('1');
-        })
-        this.CalcButton('2', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
-          this.appendDigit('2');
-        })
-        this.CalcButton('3', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
-          this.appendDigit('3');
-        })
-      }
-      .width('100%')
-      Row() {
-        this.CalcButton('%', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
-          this.applyPercent();
-        })
-        this.CalcButton('0', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
-          this.appendDigit('0');
-        })
-        this.CalcButton('.', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
-          this.appendDecimal();
-        })
-      }
-      .width('100%')
+          Row() {
+            this.CalcButton('1', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+              this.appendDigit('1');
+            })
+            this.CalcButton('2', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+              this.appendDigit('2');
+            })
+            this.CalcButton('3', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+              this.appendDigit('3');
+            })
+          }
+          .width('100%')
+          Row() {
+            this.CalcButton('%', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+              this.applyPercent();
+            })
+            this.CalcButton('0', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+              this.appendDigit('0');
+            })
+            this.CalcButton('.', COLOR_TEXT_PRIMARY, COLOR_SURFACE, (): void => {
+              this.appendDecimal();
+            })
+          }
+          .width('100%')
         }
-        .layoutWeight(1)
+        .layoutWeight(3)
+        .height(118)
         this.EqualButton()
       }
       .width('100%')

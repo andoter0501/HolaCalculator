@@ -421,7 +421,7 @@ struct Index {
           .height(32)
           .borderRadius(16)
           .backgroundColor(COLOR_PRIMARY)
-          Text('万能计算器')
+          Text('多功能计算器')
             .fontSize(22)
             .fontWeight(FontWeight.Bold)
             .fontColor(COLOR_TEXT_PRIMARY)
