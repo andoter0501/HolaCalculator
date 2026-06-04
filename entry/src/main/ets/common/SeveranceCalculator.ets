@@ -39,7 +39,7 @@ export function calculateSeverance(
   } else if (severanceType === 'n2') {
     severance = 2 * effectiveYears * effectiveSalary;
   } else {
-    severance = customMultiplier * effectiveYears * effectiveSalary;
+    severance = customMultiplier * effectiveSalary;
   }
 
   return {

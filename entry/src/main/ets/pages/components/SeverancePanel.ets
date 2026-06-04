@@ -236,10 +236,10 @@ export struct SeverancePanel {
 
       if (this.severanceType === 'custom') {
         Row() {
-          Text('赔偿倍数')
+          Text('赔偿月数')
             .fontSize(14)
             .fontColor(COLOR_TEXT_MUTED)
-          Text(`${this.severanceMultiplier || '?'} N`)
+          Text(`${this.severanceMultiplier || '?'} 个月`)
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
             .fontColor(COLOR_TEXT_PRIMARY)
@@ -324,7 +324,7 @@ export struct SeverancePanel {
         .fontWeight(FontWeight.Bold)
         .fontColor(COLOR_TEXT_PRIMARY)
         .margin({ bottom: 4 })
-      Text('N · N+1 · 2N · 自定义赔偿倍数，按《劳动合同法》计算')
+      Text('N · N+1 · 2N · 自定义赔偿月数，按《劳动合同法》计算')
         .fontSize(14)
         .fontColor(COLOR_TEXT_MUTED)
         .lineHeight(21)
@@ -345,7 +345,7 @@ export struct SeverancePanel {
       })
 
       if (this.severanceType === 'custom') {
-        this.InputField('赔偿倍数', this.severanceMultiplier, '如 1.5', (value: string): void => {
+        this.InputField('赔偿月数', this.severanceMultiplier, '如 1.5', (value: string): void => {
           this.severanceMultiplier = value;
         })
       }
